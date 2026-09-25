@@ -1,137 +1,249 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Wraps On Wheels - Menu</title>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <title>Wraps On Wheels</title>
   <style>
-    body { font-family: sans-serif; background: #0F0F12; color: #fff; margin: 0; padding: 16px; padding-bottom: 90px; }
-    h1 { color: #FF5A1F; font-size: 22px; margin-bottom: 4px; }
-    .badge { background: #222; padding: 4px 10px; border-radius: 6px; font-size: 13px; color: #aaa; display: inline-block; margin-bottom: 16px; }
-    .item-card { background: #18181D; border-radius: 10px; padding: 14px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
-    .item-title { font-size: 16px; font-weight: bold; }
-    .item-price { color: #4ade80; margin-top: 4px; font-size: 14px; }
-    .btn-qty { background: #FF5A1F; color: #fff; border: none; width: 32px; height: 32px; border-radius: 6px; font-size: 18px; cursor: pointer; }
-    .btn-qty:disabled { background: #444; }
-    .cart-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #18181D; padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #333; }
-    .order-btn { background: #FF5A1F; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; }
-    .order-btn:disabled { background: #555; }
+    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: #121212; color: #ffffff; margin: 0; padding: 16px; padding-bottom: 120px; }
+    h1 { color: #ff5722; margin: 0 0 4px 0; font-size: 26px; }
+    .table-tag { background: #222; border-radius: 6px; padding: 4px 10px; font-size: 13px; color: #bbb; display: inline-block; margin-bottom: 16px; }
+    
+    .card { background: #1e1e1e; border-radius: 12px; padding: 14px; margin-bottom: 12px; }
+    .item-row { display: flex; justify-content: space-between; align-items: center; }
+    .item-name { font-size: 16px; font-weight: 600; }
+    .item-price { color: #4caf50; font-weight: bold; margin-top: 4px; }
+    
+    .counter-btn { background: #ff5722; color: white; border: none; width: 34px; height: 34px; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; }
+    .qty-display { min-width: 28px; text-align: center; font-weight: bold; font-size: 16px; display: inline-block; }
+    
+    input, select, textarea {
+      width: 100%; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; color: white; padding: 10px; margin-top: 6px; margin-bottom: 12px; font-size: 14px;
+    }
+
+    .bottom-bar {
+      position: fixed; bottom: 0; left: 0; right: 0; background: #1a1a1a; padding: 16px; border-top: 1px solid #333; display: flex; justify-content: space-between; align-items: center;
+    }
+    .place-btn { background: #ff5722; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; }
+    
+    /* Live Order Tracker Modal */
+    #trackerCard {
+      display: none; background: #1f2937; border: 2px solid #ff5722; border-radius: 14px; padding: 16px; margin-bottom: 18px;
+    }
+    .step-box { display: flex; justify-content: space-between; margin-top: 12px; }
+    .step { text-align: center; font-size: 12px; color: #777; width: 30%; }
+    .step.active { color: #ff5722; font-weight: bold; }
+    .step-circle { width: 14px; height: 14px; border-radius: 50%; background: #444; margin: 0 auto 6px auto; }
+    .step.active .step-circle { background: #ff5722; }
   </style>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
 </head>
 <body>
 
   <h1>Wraps On Wheels</h1>
-  <div class="badge" id="tableDisplay">Table: Table 1</div>
+  <div class="table-tag" id="tableDisplay">Table: Loading...</div>
 
-  <div id="menuList"></div>
+  <!-- Live Status Tracker Box -->
+  <div id="trackerCard">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <span style="font-weight:bold; font-size:15px; color:#ff5722;">Live Order Status</span>
+      <span id="liveStatusText" style="background:#ff5722; padding:2px 8px; border-radius:4px; font-size:12px;">Placed</span>
+    </div>
+    <div class="step-box">
+      <div class="step active" id="step1">
+        <div class="step-circle"></div>
+        Order Placed
+      </div>
+      <div class="step" id="step2">
+        <div class="step-circle"></div>
+        Kitchen Preparing
+      </div>
+      <div class="step" id="step3">
+        <div class="step-circle"></div>
+        Ready / Served
+      </div>
+    </div>
+  </div>
 
-  <div class="cart-bar">
+  <!-- Customer Details & Notes -->
+  <div class="card">
+    <label style="font-size: 13px; color: #aaa;">Your Name / नाम</label>
+    <input type="text" id="custName" placeholder="Enter your name">
+
+    <label style="font-size: 13px; color: #aaa;">Dining Group / परिवार (Members)</label>
+    <select id="groupType">
+      <option value="1 Person">1 Person</option>
+      <option value="2 People">2 People (Couple / Friends)</option>
+      <option value="Family (3-4)">Family (3-4 Persons)</option>
+      <option value="Large Family / Group (5+)">Large Family / Group (5+ Persons)</option>
+    </select>
+
+    <label style="font-size: 13px; color: #aaa;">Special Note / खास निर्देश</label>
+    <textarea id="orderNote" rows="2" placeholder="e.g. Less spicy, extra sauce, quick delivery"></textarea>
+  </div>
+
+  <!-- Menu List -->
+  <div id="menuContainer"></div>
+
+  <!-- Bottom Checkout Bar -->
+  <div class="bottom-bar">
     <div>
       <div style="font-size: 12px; color: #aaa;">Total Amount</div>
-      <div style="font-size: 20px; font-weight: bold; color: #4ade80;" id="totalAmount">₹0</div>
+      <div style="font-size: 20px; font-weight: bold; color: #4caf50;" id="totalAmount">₹0</div>
     </div>
-    <button class="order-btn" id="btnPlaceOrder" onclick="placeOrder()" disabled>Place Order</button>
+    <button class="place-btn" id="orderBtn" onclick="placeOrder()">Place Order</button>
   </div>
 
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyC9jeLa4fifRH24dewecrUt",
+      authDomain: "wraps-on-wheels.firebaseapp.com",
       projectId: "wraps-on-wheels",
-      appId: "1:891475422514:web:cb7dee5c5e"
+      storageBucket: "wraps-on-wheels.appspot.com",
+      messagingSenderId: "891475422514",
+      appId: "1:891475422514:web:cb7dee5c5edf2e45e37b2b"
     };
+
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const tableNumber = urlParams.get('table') || 'Table 1';
-    document.getElementById('tableDisplay').innerText = "Table: " + tableNumber;
-
-    const menu = [
-      { name: "1 Feet Shawarma (Chicken)", price: 220 },
-      { name: "1 Feet Shawarma (Beef)", price: 250 },
-      { name: "Rumali Roll (Chicken)", price: 130 },
-      { name: "Plate Shawarma", price: 180 },
-      { name: "Loaded Fries", price: 120 },
-      { name: "Fresh Lime", price: 30 },
-      { name: "Blue Curacao Mojito", price: 90 },
-      { name: "Avil Milk Special", price: 80 }
+    const menuItems = [
+      { id: 1, name: "1 Feet Shawarma (Chicken)", price: 220 },
+      { id: 2, name: "1 Feet Shawarma (Beef)", price: 250 },
+      { id: 3, name: "Rumali Roll (Chicken)", price: 130 },
+      { id: 4, name: "Plate Shawarma", price: 180 },
+      { id: 5, name: "Loaded Fries", price: 120 },
+      { id: 6, name: "Fresh Lime", price: 30 },
+      { id: 7, name: "Blue Curacao Mojito", price: 90 },
+      { id: 8, name: "Avil Milk Special", price: 70 }
     ];
 
-    const cart = {};
+    let cart = {};
+
+    const urlParams = new URLSearchParams(window.location.search);
+    let tableParam = urlParams.get('table') || '1';
+    tableParam = tableParam.split(']')[0].replace(/%20/g, ' ');
+    document.getElementById('tableDisplay').innerText = "Table: " + tableParam;
 
     function renderMenu() {
-      const container = document.getElementById('menuList');
-      container.innerHTML = '';
-      menu.forEach(item => {
-        const qty = cart[item.name] || 0;
-        const div = document.createElement('div');
-        div.className = 'item-card';
-        div.innerHTML = `
+      const container = document.getElementById('menuContainer');
+      container.innerHTML = menuItems.map(item => `
+        <div class="card item-row">
           <div>
-            <div class="item-title">${item.name}</div>
+            <div class="item-name">${item.name}</div>
             <div class="item-price">₹${item.price}</div>
           </div>
           <div>
-            ${qty > 0 ? `<button class="btn-qty" onclick="changeQty('${item.name}', -1)">-</button>` : ''}
-            <span style="margin: 0 8px; font-weight: bold;">${qty > 0 ? qty : ''}</span>
-            <button class="btn-qty" onclick="changeQty('${item.name}', 1)">+</button>
+            ${cart[item.id] ? `
+              <button class="counter-btn" onclick="updateQty(${item.id}, -1)">-</button>
+              <span class="qty-display">${cart[item.id]}</span>
+              <button class="counter-btn" onclick="updateQty(${item.id}, 1)">+</button>
+            ` : `
+              <button class="counter-btn" onclick="updateQty(${item.id}, 1)">+</button>
+            `}
           </div>
-        `;
-        container.appendChild(div);
-      });
-      updateTotal();
+        </div>
+      `).join('');
+      calcTotal();
     }
 
-    function changeQty(name, delta) {
-      cart[name] = (cart[name] || 0) + delta;
-      if (cart[name] <= 0) delete cart[name];
+    function updateQty(id, change) {
+      cart[id] = (cart[id] || 0) + change;
+      if (cart[id] <= 0) delete cart[id];
       renderMenu();
     }
 
-    function updateTotal() {
+    function calcTotal() {
       let total = 0;
-      let count = 0;
-      for (const [k, v] of Object.entries(cart)) {
-        const item = menu.find(m => m.name === k);
-        total += item.price * v;
-        count += v;
+      for (let id in cart) {
+        let item = menuItems.find(m => m.id == id);
+        if (item) total += item.price * cart[id];
       }
-      document.getElementById('totalAmount').innerText = '₹' + total;
-      document.getElementById('btnPlaceOrder').disabled = count === 0;
+      document.getElementById('totalAmount').innerText = "₹" + total;
     }
 
     async function placeOrder() {
-      const btn = document.getElementById('btnPlaceOrder');
-      btn.innerText = "Placing...";
-      btn.disabled = true;
-
-      const items = [];
+      let itemsOrdered = [];
       let total = 0;
-      for (const [k, v] of Object.entries(cart)) {
-        const item = menu.find(m => m.name === k);
-        items.push({ name: k, price: item.price, quantity: v });
-        total += item.price * v;
+
+      for (let id in cart) {
+        let item = menuItems.find(m => m.id == id);
+        if (item) {
+          itemsOrdered.push({ name: item.name, price: item.price, quantity: cart[id] });
+          total += item.price * cart[id];
+        }
       }
+
+      if (itemsOrdered.length === 0) {
+        alert("कृपया मेनू से कोई आइटम जोड़ें!");
+        return;
+      }
+
+      const btn = document.getElementById('orderBtn');
+      btn.disabled = true;
+      btn.innerText = "Placing...";
+
+      const custName = document.getElementById('custName').value.trim() || 'Guest';
+      const diningGroup = document.getElementById('groupType').value;
+      const orderNote = document.getElementById('orderNote').value.trim();
 
       try {
-        await db.collection('orders').add({
-          tableNumber: tableNumber,
-          items: items,
-          totalAmount: total,
-          status: 'NEW',
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        const orderRef = await db.collection("orders").add({
+          table: "Table " + tableParam,
+          customerName: custName,
+          diningGroup: diningGroup,
+          note: orderNote,
+          items: itemsOrdered,
+          total: total,
+          status: "pending",
+          timestamp: firebase.firestore.FieldValue.serverTimestamp()
         });
-        alert('Order placed successfully! Kitchen will start preparing soon.');
-        for (const k in cart) delete cart[k];
-        renderMenu();
+
+        alert("Order placed successfully!");
+        btn.innerText = "Order Placed";
+        listenOrderTracking(orderRef.id);
       } catch (err) {
-        alert('Error: ' + err.message);
-      } finally {
+        alert("Error placing order: " + err.message);
+        btn.disabled = false;
         btn.innerText = "Place Order";
-        updateTotal();
       }
+    }
+
+    function listenOrderTracking(orderId) {
+      document.getElementById('trackerCard').style.display = 'block';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      db.collection("orders").doc(orderId).onSnapshot((doc) => {
+        if (!doc.exists) return;
+        const data = doc.data();
+        const status = data.status || 'pending';
+        const statusText = document.getElementById('liveStatusText');
+        const s1 = document.getElementById('step1');
+        const s2 = document.getElementById('step2');
+        const s3 = document.getElementById('step3');
+
+        s1.classList.remove('active');
+        s2.classList.remove('active');
+        s3.classList.remove('active');
+
+        if (status === 'pending') {
+          statusText.innerText = "Confirmed / Placed";
+          s1.classList.add('active');
+        } else if (status === 'preparing' || status === 'kitchen') {
+          statusText.innerText = "Preparing in Kitchen";
+          s1.classList.add('active');
+          s2.classList.add('active');
+        } else if (status === 'completed' || status === 'served') {
+          statusText.innerText = "Ready / Served";
+          s1.classList.add('active');
+          s2.classList.add('active');
+          s3.classList.add('active');
+        }
+      });
     }
 
     renderMenu();
