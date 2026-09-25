@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,7 +22,7 @@ class WrapsApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Wraps On Wheels',
+      title: 'Wraps On Wheels POS',
       debugShowCheckedModeBanner: false,
       theme: ThemeData.dark().copyWith(
         scaffoldBackgroundColor: const Color(0xFF110D0B),
@@ -31,11 +32,160 @@ class WrapsApp extends StatelessWidget {
           surface: Color(0xFF1D1815),
         ),
       ),
-      home: const MainNavigationScreen(),
+      home: const AuthGate(),
     );
   }
 }
 
+// -------------------------------------------------------------
+// AUTH GATE: चेक करेगा कि यूज़र लॉग इन है या नहीं
+// -------------------------------------------------------------
+class AuthGate extends StatelessWidget {
+  const AuthGate({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<User?>(
+      stream: FirebaseAuth.instance.authStateChanges(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator(color: Color(0xFFFF5722))),
+          );
+        }
+        if (snapshot.hasData) {
+          return const MainNavigationScreen();
+        }
+        return const LoginScreen();
+      },
+    );
+  }
+}
+
+// -------------------------------------------------------------
+// LOGIN SCREEN
+// -------------------------------------------------------------
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _isLoading = false;
+  String _errorMessage = '';
+
+  Future<void> _handleLogin() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = '';
+    });
+
+    try {
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+    } on FirebaseAuthException catch (e) {
+      setState(() {
+        _errorMessage = e.message ?? 'Login failed. Please check credentials.';
+      });
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFF110D0B),
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Icon(Icons.soup_kitchen, size: 70, color: Color(0xFFFF5722)),
+                const SizedBox(height: 16),
+                const Text(
+                  'Wraps On Wheels',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.white),
+                ),
+                const SizedBox(height: 6),
+                const Text(
+                  'Staff & Kitchen POS Login',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 14, color: Colors.white54),
+                ),
+                const SizedBox(height: 32),
+                if (_errorMessage.isNotEmpty)
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    margin: const EdgeInsets.only(bottom: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.redAccent),
+                    ),
+                    child: Text(_errorMessage, style: const TextStyle(color: Colors.redAccent, fontSize: 13)),
+                  ),
+                TextField(
+                  controller: _emailController,
+                  keyboardType: TextInputType.emailAddress,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
+                    labelText: 'Staff Email',
+                    labelStyle: const TextStyle(color: Colors.white60),
+                    prefixIcon: const Icon(Icons.email_outlined, color: Colors.white60),
+                    filled: true,
+                    fillColor: const Color(0xFF1D1815),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _passwordController,
+                  obscureText: true,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
+                    labelText: 'Password',
+                    labelStyle: const TextStyle(color: Colors.white60),
+                    prefixIcon: const Icon(Icons.lock_outline, color: Colors.white60),
+                    filled: true,
+                    fillColor: const Color(0xFF1D1815),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFF5722),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  onPressed: _isLoading ? null : _handleLogin,
+                  child: _isLoading
+                      ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                      : const Text('Log In', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// -------------------------------------------------------------
+// MAIN NAVIGATION (KITCHEN, COUNTER, ORDERS, SETTINGS)
+// -------------------------------------------------------------
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
 
@@ -119,16 +269,12 @@ class _KitchenScreenState extends State<KitchenScreen> {
 
     return Column(
       children: [
-        // Top Header
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Kitchen',
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
-              ),
+              const Text('Kitchen', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white)),
               Container(
                 decoration: BoxDecoration(
                   color: const Color(0xFF261E1A),
@@ -147,11 +293,7 @@ class _KitchenScreenState extends State<KitchenScreen> {
                         ),
                         child: Text(
                           'Orders',
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                            color: viewByOrders ? Colors.white : Colors.white70,
-                          ),
+                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: viewByOrders ? Colors.white : Colors.white70),
                         ),
                       ),
                     ),
@@ -165,11 +307,7 @@ class _KitchenScreenState extends State<KitchenScreen> {
                         ),
                         child: Text(
                           'By dish',
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                            color: !viewByOrders ? Colors.white : Colors.white70,
-                          ),
+                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: !viewByOrders ? Colors.white : Colors.white70),
                         ),
                       ),
                     ),
@@ -179,8 +317,6 @@ class _KitchenScreenState extends State<KitchenScreen> {
             ],
           ),
         ),
-
-        // Filter Tabs (NEW, COOKING, READY, DONE)
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
@@ -192,20 +328,11 @@ class _KitchenScreenState extends State<KitchenScreen> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 14),
                   decoration: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(
-                        color: isSel ? const Color(0xFFFF9800) : Colors.transparent,
-                        width: 2.5,
-                      ),
-                    ),
+                    border: Border(bottom: BorderSide(color: isSel ? const Color(0xFFFF9800) : Colors.transparent, width: 2.5)),
                   ),
                   child: Text(
                     status,
-                    style: TextStyle(
-                      color: isSel ? const Color(0xFFFF9800) : Colors.white60,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
+                    style: TextStyle(color: isSel ? const Color(0xFFFF9800) : Colors.white60, fontWeight: FontWeight.bold, fontSize: 14),
                   ),
                 ),
               );
@@ -213,8 +340,6 @@ class _KitchenScreenState extends State<KitchenScreen> {
           ),
         ),
         const SizedBox(height: 8),
-
-        // Orders Stream
         Expanded(
           child: StreamBuilder<QuerySnapshot>(
             stream: firestore
@@ -230,15 +355,7 @@ class _KitchenScreenState extends State<KitchenScreen> {
 
               if (orders.isEmpty) {
                 return const Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'No new orders. Ears open for the ding 🔔',
-                        style: TextStyle(color: Colors.white70, fontSize: 15),
-                      ),
-                    ],
-                  ),
+                  child: Text('No new orders. Ears open for the ding 🔔', style: TextStyle(color: Colors.white70, fontSize: 15)),
                 );
               }
 
@@ -281,32 +398,16 @@ class _KitchenScreenState extends State<KitchenScreen> {
                                 ),
                                 child: Text(
                                   table.toString(),
-                                  style: const TextStyle(
-                                    color: Color(0xFFFF7043),
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                                  style: const TextStyle(color: Color(0xFFFF7043), fontWeight: FontWeight.bold),
                                 ),
                               ),
-                              Text(
-                                '₹$total',
-                                style: const TextStyle(
-                                  color: Color(0xFF4CAF50),
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
+                              Text('₹$total', style: const TextStyle(color: Color(0xFF4CAF50), fontSize: 16, fontWeight: FontWeight.bold)),
                             ],
                           ),
                           const SizedBox(height: 10),
-                          Text(
-                            'Customer: $custName',
-                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
-                          ),
+                          Text('Customer: $custName', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
                           if (dining.toString().isNotEmpty)
-                            Text(
-                              'Members: $dining',
-                              style: const TextStyle(fontSize: 13, color: Color(0xFFFF9800)),
-                            ),
+                            Text('Members: $dining', style: const TextStyle(fontSize: 13, color: Color(0xFFFF9800))),
                           if (note.toString().isNotEmpty) ...[
                             const SizedBox(height: 6),
                             Container(
@@ -316,10 +417,7 @@ class _KitchenScreenState extends State<KitchenScreen> {
                                 borderRadius: BorderRadius.circular(6),
                                 border: Border.all(color: Colors.amber.withOpacity(0.4)),
                               ),
-                              child: Text(
-                                'Note: $note',
-                                style: const TextStyle(fontSize: 13, color: Colors.amberAccent, fontStyle: FontStyle.italic),
-                              ),
+                              child: Text('Note: $note', style: const TextStyle(fontSize: 13, color: Colors.amberAccent, fontStyle: FontStyle.italic)),
                             ),
                           ],
                           const Divider(color: Color(0xFF2C2420), height: 24),
@@ -329,10 +427,7 @@ class _KitchenScreenState extends State<KitchenScreen> {
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(
-                                    "${item['name']}  x${item['quantity']}",
-                                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
-                                  ),
+                                  Text("${item['name']}  x${item['quantity']}", style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
                                   Text('₹${(item['price'] ?? 0) * (item['quantity'] ?? 1)}', style: const TextStyle(color: Colors.white70)),
                                 ],
                               ),
@@ -343,9 +438,7 @@ class _KitchenScreenState extends State<KitchenScreen> {
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
                               TextButton(
-                                onPressed: () {
-                                  firestore.collection('orders').doc(doc.id).update({'status': 'CANCELLED'});
-                                },
+                                onPressed: () => firestore.collection('orders').doc(doc.id).update({'status': 'CANCELLED'}),
                                 child: const Text('Cancel Order', style: TextStyle(color: Colors.redAccent)),
                               ),
                               const SizedBox(width: 8),
@@ -359,20 +452,10 @@ class _KitchenScreenState extends State<KitchenScreen> {
                                   foregroundColor: Colors.white,
                                 ),
                                 onPressed: () {
-                                  String nextStatus = selectedFilter == 'NEW'
-                                      ? 'COOKING'
-                                      : selectedFilter == 'COOKING'
-                                          ? 'READY'
-                                          : 'DONE';
-                                  firestore.collection('orders').doc(doc.id).update({'status': nextStatus});
+                                  String next = selectedFilter == 'NEW' ? 'COOKING' : selectedFilter == 'COOKING' ? 'READY' : 'DONE';
+                                  firestore.collection('orders').doc(doc.id).update({'status': next});
                                 },
-                                child: Text(
-                                  selectedFilter == 'NEW'
-                                      ? 'Start Cooking'
-                                      : selectedFilter == 'COOKING'
-                                          ? 'Mark Ready'
-                                          : 'Serve Order',
-                                ),
+                                child: Text(selectedFilter == 'NEW' ? 'Start Cooking' : selectedFilter == 'COOKING' ? 'Mark Ready' : 'Serve Order'),
                               ),
                             ],
                           ),
@@ -391,135 +474,14 @@ class _KitchenScreenState extends State<KitchenScreen> {
 }
 
 // -------------------------------------------------------------
-// 2. COUNTER SCREEN (POS Menu Grid)
+// 2. COUNTER SCREEN
 // -------------------------------------------------------------
 class CounterScreen extends StatelessWidget {
   const CounterScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final dishes = [
-      {'name': '1 Feet • Normal', 'price': 240, 'chili': false},
-      {'name': '1 Feet • BBQ', 'price': 240, 'chili': false},
-      {'name': '1 Feet • Tandoori', 'price': 240, 'chili': false},
-      {'name': '1 Feet • Peri Peri', 'price': 240, 'chili': true},
-      {'name': '1 Feet • Jalapeno', 'price': 240, 'chili': true},
-      {'name': '1 Feet • Jamaican Jerk', 'price': 240, 'chili': true},
-      {'name': '1 Feet • Hot N Spicy', 'price': 240, 'chili': true},
-      {'name': '1 Feet • Korean', 'price': 240, 'chili': true},
-      {'name': '1 Feet • Cheese Burst', 'price': 240, 'chili': false},
-      {'name': '1 Feet • Honey Mustard', 'price': 240, 'chili': false},
-    ];
-
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Padding(
-            padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
-            child: Text(
-              'Counter',
-              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.only(bottom: 6),
-                  decoration: const BoxDecoration(
-                    border: Border(bottom: BorderSide(color: Color(0xFFFF9800), width: 2.5)),
-                  ),
-                  child: const Text(
-                    'NEW ORDER',
-                    style: TextStyle(color: Color(0xFFFF9800), fontWeight: FontWeight.bold, fontSize: 13),
-                  ),
-                ),
-                const SizedBox(width: 24),
-                const Text(
-                  'PAYMENTS',
-                  style: TextStyle(color: Colors.white54, fontWeight: FontWeight.bold, fontSize: 13),
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-              decoration: BoxDecoration(
-                color: const Color(0xFF1D1815),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: const Color(0xFF2C2420)),
-              ),
-              child: const Row(
-                children: [
-                  Icon(Icons.search, color: Colors.white54, size: 20),
-                  SizedBox(width: 10),
-                  Text('Search dish...', style: TextStyle(color: Colors.white38, fontSize: 14)),
-                ],
-              ),
-            ),
-          ),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-            child: Text(
-              '1 Feet Shawarma',
-              style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white70),
-            ),
-          ),
-          Expanded(
-            child: GridView.builder(
-              padding: const EdgeInsets.all(16),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                childAspectRatio: 2.3,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-              ),
-              itemCount: dishes.length,
-              itemBuilder: (context, index) {
-                final d = dishes[index];
-                return Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF1D1815),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFF2A221E)),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              d['name'] as String,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                          if (d['chili'] == true) const Text(' 🌶️', style: TextStyle(fontSize: 12)),
-                        ],
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        '₹${d['price']} +',
-                        style: const TextStyle(color: Color(0xFFFF9800), fontWeight: FontWeight.bold, fontSize: 13),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
+    return const Center(child: Text("Counter Screen", style: TextStyle(color: Colors.white70)));
   }
 }
 
@@ -531,101 +493,76 @@ class OrdersHistoryScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Orders', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white)),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFF5722),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: const Text('Today', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                ),
-                const SizedBox(width: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF1D1815),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: const Color(0xFF2C2420)),
-                  ),
-                  child: const Text('Yesterday', style: TextStyle(color: Colors.white70)),
-                ),
-              ],
-            ),
-            const SizedBox(height: 14),
-            const Text('0 orders • ₹0 collected', style: TextStyle(color: Colors.white54, fontSize: 13)),
-            const Spacer(),
-            const Center(child: Text('No orders here.', style: TextStyle(color: Colors.white54, fontSize: 15))),
-            const Spacer(),
-          ],
-        ),
-      ),
-    );
+    return const Center(child: Text("Orders History", style: TextStyle(color: Colors.white70)));
   }
 }
 
 // -------------------------------------------------------------
-// 4. SETTINGS SCREEN
+// 4. SETTINGS SCREEN (Signed In User & Logout)
 // -------------------------------------------------------------
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          const Text('Settings', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white)),
-          const Text('Wraps On Wheels', style: TextStyle(color: Colors.white54, fontSize: 14)),
-          const SizedBox(height: 20),
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1D1815),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: const Color(0xFF2C2420)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Row(
-                  children: [
-                    Text('Notifications 🔔', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'This phone gets an alert when a QR order waits more than 3 minutes.',
-                  style: TextStyle(color: Colors.white70, fontSize: 13),
-                ),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF381F17),
-                    foregroundColor: const Color(0xFFFF9800),
-                    side: const BorderSide(color: Color(0xFFFF7043)),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                  ),
-                  onPressed: () {},
-                  child: const Text('Send a test'),
-                ),
-              ],
-            ),
+    final user = FirebaseAuth.instance.currentUser;
+    final email = user?.email ?? 'sunny@wrapsonwheels.app';
+
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        const Text('Settings', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white)),
+        const Text('Wraps On Wheels', style: TextStyle(color: Colors.white54, fontSize: 14)),
+        const SizedBox(height: 20),
+
+        // User info box
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1D1815),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: const Color(0xFF2C2420)),
           ),
-        ],
-      ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Signed in as', style: TextStyle(fontSize: 13, color: Colors.white54)),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  CircleAvatar(
+                    backgroundColor: Colors.white12,
+                    child: Text(email[0].toUpperCase(), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  ),
+                  const SizedBox(width: 12),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(email.split('@')[0], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                      Text('$email • Staff', style: const TextStyle(color: Colors.white54, fontSize: 13)),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 24),
+
+        // Sign Out Button
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF261E1A),
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+          onPressed: () async {
+            await FirebaseAuth.instance.signOut();
+          },
+          child: const Text('Sign out', style: TextStyle(fontWeight: FontWeight.bold)),
+        ),
+      ],
     );
   }
 }
