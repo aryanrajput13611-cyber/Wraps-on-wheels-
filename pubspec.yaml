@@ -1,5 +1,5 @@
 name: wraps_on_wheels
-description: Wraps on Wheels restaurant order POS
+description: Wraps on Wheels restaurant order app
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -13,6 +13,7 @@ dependencies:
   firebase_core: ^3.6.0
   cloud_firestore: ^5.4.4
   audioplayers: ^6.0.0
+  firebase_auth: ^5.3.1
 
 dev_dependencies:
   flutter_test:
@@ -21,4 +22,3 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-  
