@@ -60,11 +60,11 @@
       </div>
       <div class="step" id="step2">
         <div class="step-circle"></div>
-        Kitchen Preparing
+        Kitchen (Cooking)
       </div>
       <div class="step" id="step3">
         <div class="step-circle"></div>
-        Ready / Served
+        Ready / Done
       </div>
     </div>
   </div>
@@ -199,7 +199,7 @@
           note: orderNote,
           items: itemsOrdered,
           total: total,
-          status: "pending",
+          status: "new",
           timestamp: firebase.firestore.FieldValue.serverTimestamp()
         });
 
@@ -220,7 +220,7 @@
       db.collection("orders").doc(orderId).onSnapshot((doc) => {
         if (!doc.exists) return;
         const data = doc.data();
-        const status = data.status || 'pending';
+        const status = (data.status || 'new').toLowerCase();
         const statusText = document.getElementById('liveStatusText');
         const s1 = document.getElementById('step1');
         const s2 = document.getElementById('step2');
@@ -230,15 +230,20 @@
         s2.classList.remove('active');
         s3.classList.remove('active');
 
-        if (status === 'pending') {
+        if (status === 'new' || status === 'pending') {
           statusText.innerText = "Confirmed / Placed";
           s1.classList.add('active');
-        } else if (status === 'preparing' || status === 'kitchen') {
-          statusText.innerText = "Preparing in Kitchen";
+        } else if (status === 'cooking' || status === 'preparing') {
+          statusText.innerText = "Cooking in Kitchen";
           s1.classList.add('active');
           s2.classList.add('active');
-        } else if (status === 'completed' || status === 'served') {
-          statusText.innerText = "Ready / Served";
+        } else if (status === 'ready') {
+          statusText.innerText = "Ready to Serve";
+          s1.classList.add('active');
+          s2.classList.add('active');
+          s3.classList.add('active');
+        } else if (status === 'done' || status === 'completed') {
+          statusText.innerText = "Completed / Served";
           s1.classList.add('active');
           s2.classList.add('active');
           s3.classList.add('active');
