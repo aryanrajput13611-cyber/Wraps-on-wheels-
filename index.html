@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wraps On Wheels - Menu</title>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <style>
+    body { font-family: sans-serif; background: #0F0F12; color: #fff; margin: 0; padding: 16px; padding-bottom: 90px; }
+    h1 { color: #FF5A1F; font-size: 22px; margin-bottom: 4px; }
+    .badge { background: #222; padding: 4px 10px; border-radius: 6px; font-size: 13px; color: #aaa; display: inline-block; margin-bottom: 16px; }
+    .item-card { background: #18181D; border-radius: 10px; padding: 14px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+    .item-title { font-size: 16px; font-weight: bold; }
+    .item-price { color: #4ade80; margin-top: 4px; font-size: 14px; }
+    .btn-qty { background: #FF5A1F; color: #fff; border: none; width: 32px; height: 32px; border-radius: 6px; font-size: 18px; cursor: pointer; }
+    .btn-qty:disabled { background: #444; }
+    .cart-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #18181D; padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #333; }
+    .order-btn { background: #FF5A1F; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; }
+    .order-btn:disabled { background: #555; }
+  </style>
+</head>
+<body>
+
+  <h1>Wraps On Wheels</h1>
+  <div class="badge" id="tableDisplay">Table: Table 1</div>
+
+  <div id="menuList"></div>
+
+  <div class="cart-bar">
+    <div>
+      <div style="font-size: 12px; color: #aaa;">Total Amount</div>
+      <div style="font-size: 20px; font-weight: bold; color: #4ade80;" id="totalAmount">₹0</div>
+    </div>
+    <button class="order-btn" id="btnPlaceOrder" onclick="placeOrder()" disabled>Place Order</button>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyC9jeLa4fifRH24dewecrUt",
+      projectId: "wraps-on-wheels",
+      appId: "1:891475422514:web:cb7dee5c5e"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const tableNumber = urlParams.get('table') || 'Table 1';
+    document.getElementById('tableDisplay').innerText = "Table: " + tableNumber;
+
+    const menu = [
+      { name: "1 Feet Shawarma (Chicken)", price: 220 },
+      { name: "1 Feet Shawarma (Beef)", price: 250 },
+      { name: "Rumali Roll (Chicken)", price: 130 },
+      { name: "Plate Shawarma", price: 180 },
+      { name: "Loaded Fries", price: 120 },
+      { name: "Fresh Lime", price: 30 },
+      { name: "Blue Curacao Mojito", price: 90 },
+      { name: "Avil Milk Special", price: 80 }
+    ];
+
+    const cart = {};
+
+    function renderMenu() {
+      const container = document.getElementById('menuList');
+      container.innerHTML = '';
+      menu.forEach(item => {
+        const qty = cart[item.name] || 0;
+        const div = document.createElement('div');
+        div.className = 'item-card';
+        div.innerHTML = `
+          <div>
+            <div class="item-title">${item.name}</div>
+            <div class="item-price">₹${item.price}</div>
+          </div>
+          <div>
+            ${qty > 0 ? `<button class="btn-qty" onclick="changeQty('${item.name}', -1)">-</button>` : ''}
+            <span style="margin: 0 8px; font-weight: bold;">${qty > 0 ? qty : ''}</span>
+            <button class="btn-qty" onclick="changeQty('${item.name}', 1)">+</button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+      updateTotal();
+    }
+
+    function changeQty(name, delta) {
+      cart[name] = (cart[name] || 0) + delta;
+      if (cart[name] <= 0) delete cart[name];
+      renderMenu();
+    }
+
+    function updateTotal() {
+      let total = 0;
+      let count = 0;
+      for (const [k, v] of Object.entries(cart)) {
+        const item = menu.find(m => m.name === k);
+        total += item.price * v;
+        count += v;
+      }
+      document.getElementById('totalAmount').innerText = '₹' + total;
+      document.getElementById('btnPlaceOrder').disabled = count === 0;
+    }
+
+    async function placeOrder() {
+      const btn = document.getElementById('btnPlaceOrder');
+      btn.innerText = "Placing...";
+      btn.disabled = true;
+
+      const items = [];
+      let total = 0;
+      for (const [k, v] of Object.entries(cart)) {
+        const item = menu.find(m => m.name === k);
+        items.push({ name: k, price: item.price, quantity: v });
+        total += item.price * v;
+      }
+
+      try {
+        await db.collection('orders').add({
+          tableNumber: tableNumber,
+          items: items,
+          totalAmount: total,
+          status: 'NEW',
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        alert('Order placed successfully! Kitchen will start preparing soon.');
+        for (const k in cart) delete cart[k];
+        renderMenu();
+      } catch (err) {
+        alert('Error: ' + err.message);
+      } finally {
+        btn.innerText = "Place Order";
+        updateTotal();
+      }
+    }
+
+    renderMenu();
+  </script>
+</body>
+</html>
