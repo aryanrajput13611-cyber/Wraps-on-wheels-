@@ -6,30 +6,32 @@
   <title>Wraps On Wheels</title>
   <style>
     * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background-color: #121212; color: #ffffff; margin: 0; padding: 16px; padding-bottom: 120px; }
-    h1 { color: #ff5722; margin: 0 0 4px 0; font-size: 26px; }
-    .table-tag { background: #222; border-radius: 6px; padding: 4px 10px; font-size: 13px; color: #bbb; display: inline-block; margin-bottom: 16px; }
+    body { background-color: #121212; color: #ffffff; margin: 0; padding: 16px; padding-bottom: 130px; }
+    h1 { color: #ff5722; margin: 0 0 4px 0; font-size: 24px; font-weight: 800; }
+    .table-tag { background: #261e1a; border: 1px solid #ff5722; border-radius: 6px; padding: 4px 10px; font-size: 13px; color: #ff7043; display: inline-block; margin-bottom: 14px; font-weight: bold; }
     
-    .card { background: #1e1e1e; border-radius: 12px; padding: 14px; margin-bottom: 12px; }
+    .card { background: #1e1e1e; border-radius: 12px; padding: 14px; margin-bottom: 12px; border: 1px solid #2c2420; }
+    .cat-title { color: #ff9800; font-size: 18px; font-weight: bold; margin: 18px 0 10px 0; border-bottom: 1px solid #33261f; padding-bottom: 4px; }
+    
     .item-row { display: flex; justify-content: space-between; align-items: center; }
-    .item-name { font-size: 16px; font-weight: 600; }
-    .item-price { color: #4caf50; font-weight: bold; margin-top: 4px; }
+    .item-name { font-size: 15px; font-weight: 600; color: #fff; }
+    .item-price { color: #4caf50; font-weight: bold; margin-top: 4px; font-size: 14px; }
     
-    .counter-btn { background: #ff5722; color: white; border: none; width: 34px; height: 34px; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; }
-    .qty-display { min-width: 28px; text-align: center; font-weight: bold; font-size: 16px; display: inline-block; }
+    .counter-btn { background: #ff5722; color: white; border: none; width: 32px; height: 32px; border-radius: 6px; font-size: 18px; font-weight: bold; cursor: pointer; }
+    .qty-display { min-width: 26px; text-align: center; font-weight: bold; font-size: 15px; display: inline-block; }
     
     input, select, textarea {
       width: 100%; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; color: white; padding: 10px; margin-top: 6px; margin-bottom: 12px; font-size: 14px;
     }
 
     .bottom-bar {
-      position: fixed; bottom: 0; left: 0; right: 0; background: #1a1a1a; padding: 16px; border-top: 1px solid #333; display: flex; justify-content: space-between; align-items: center;
+      position: fixed; bottom: 0; left: 0; right: 0; background: #181412; padding: 14px 16px; border-top: 1px solid #33261f; display: flex; justify-content: space-between; align-items: center; z-index: 100;
     }
-    .place-btn { background: #ff5722; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; }
+    .place-btn { background: #ff5722; color: white; border: none; padding: 12px 22px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; }
     
     /* Live Order Tracker Modal */
     #trackerCard {
-      display: none; background: #1f2937; border: 2px solid #ff5722; border-radius: 14px; padding: 16px; margin-bottom: 18px;
+      display: none; background: #1e1b18; border: 2px solid #ff5722; border-radius: 12px; padding: 14px; margin-bottom: 16px;
     }
     .step-box { display: flex; justify-content: space-between; margin-top: 12px; }
     .step { text-align: center; font-size: 12px; color: #777; width: 30%; }
@@ -112,14 +114,119 @@
     const db = firebase.firestore();
 
     const menuItems = [
-      { id: 1, name: "1 Feet Shawarma (Chicken)", price: 220 },
-      { id: 2, name: "1 Feet Shawarma (Beef)", price: 250 },
-      { id: 3, name: "Rumali Roll (Chicken)", price: 130 },
-      { id: 4, name: "Plate Shawarma", price: 180 },
-      { id: 5, name: "Loaded Fries", price: 120 },
-      { id: 6, name: "Fresh Lime", price: 30 },
-      { id: 7, name: "Blue Curacao Mojito", price: 90 },
-      { id: 8, name: "Avil Milk Special", price: 70 }
+      // 1 FEET SHAWARMA - CHICKEN
+      { id: 101, cat: "1 Feet Shawarma (Chicken)", name: "1 Feet • Normal (Chicken)", price: 240 },
+      { id: 102, cat: "1 Feet Shawarma (Chicken)", name: "1 Feet • BBQ (Chicken)", price: 240 },
+      { id: 103, cat: "1 Feet Shawarma (Chicken)", name: "1 Feet • Tandoori (Chicken)", price: 240 },
+      { id: 104, cat: "1 Feet Shawarma (Chicken)", name: "1 Feet • Peri Peri (Chicken) 🌶️", price: 240 },
+      { id: 105, cat: "1 Feet Shawarma (Chicken)", name: "1 Feet • Jalapeno (Chicken) 🌶️", price: 240 },
+      { id: 106, cat: "1 Feet Shawarma (Chicken)", name: "1 Feet • Jamaican Jerk (Chicken) 🌶️", price: 240 },
+      { id: 107, cat: "1 Feet Shawarma (Chicken)", name: "1 Feet • Hot N Spicy (Chicken) 🌶️", price: 240 },
+      { id: 108, cat: "1 Feet Shawarma (Chicken)", name: "1 Feet • Korean (Chicken) 🌶️", price: 240 },
+      { id: 109, cat: "1 Feet Shawarma (Chicken)", name: "1 Feet • Cheese Burst (Chicken)", price: 240 },
+      { id: 110, cat: "1 Feet Shawarma (Chicken)", name: "1 Feet • Honey Mustard (Chicken)", price: 240 },
+
+      // 1 FEET SHAWARMA - BEEF
+      { id: 121, cat: "1 Feet Shawarma (Beef)", name: "1 Feet • Normal (Beef)", price: 250 },
+      { id: 122, cat: "1 Feet Shawarma (Beef)", name: "1 Feet • BBQ (Beef)", price: 250 },
+      { id: 123, cat: "1 Feet Shawarma (Beef)", name: "1 Feet • Tandoori (Beef)", price: 250 },
+      { id: 124, cat: "1 Feet Shawarma (Beef)", name: "1 Feet • Peri Peri (Beef) 🌶️", price: 250 },
+      { id: 125, cat: "1 Feet Shawarma (Beef)", name: "1 Feet • Jalapeno (Beef) 🌶️", price: 250 },
+      { id: 126, cat: "1 Feet Shawarma (Beef)", name: "1 Feet • Jamaican Jerk (Beef) 🌶️", price: 250 },
+      { id: 127, cat: "1 Feet Shawarma (Beef)", name: "1 Feet • Hot N Spicy (Beef) 🌶️", price: 250 },
+      { id: 128, cat: "1 Feet Shawarma (Beef)", name: "1 Feet • Korean (Beef) 🌶️", price: 250 },
+      { id: 129, cat: "1 Feet Shawarma (Beef)", name: "1 Feet • Cheese Burst (Beef)", price: 250 },
+      { id: 130, cat: "1 Feet Shawarma (Beef)", name: "1 Feet • Honey Mustard (Beef)", price: 250 },
+
+      // SHAWARMA ROLLS (RUMALI) - CHICKEN
+      { id: 201, cat: "Shawarma Rolls • Chicken", name: "Normal Roll (Chicken)", price: 140 },
+      { id: 202, cat: "Shawarma Rolls • Chicken", name: "BBQ Roll (Chicken)", price: 150 },
+      { id: 203, cat: "Shawarma Rolls • Chicken", name: "Tandoori Roll (Chicken)", price: 150 },
+      { id: 204, cat: "Shawarma Rolls • Chicken", name: "Peri Peri Roll (Chicken) 🌶️", price: 150 },
+      { id: 205, cat: "Shawarma Rolls • Chicken", name: "Jalapeno Roll (Chicken) 🌶️", price: 150 },
+      { id: 206, cat: "Shawarma Rolls • Chicken", name: "Jamaican Jerk Roll (Chicken) 🌶️", price: 150 },
+      { id: 207, cat: "Shawarma Rolls • Chicken", name: "Hot N Spicy Roll (Chicken) 🌶️", price: 150 },
+      { id: 208, cat: "Shawarma Rolls • Chicken", name: "Korean Roll (Chicken) 🌶️", price: 150 },
+      { id: 209, cat: "Shawarma Rolls • Chicken", name: "Cheese Burst Roll (Chicken)", price: 150 },
+      { id: 210, cat: "Shawarma Rolls • Chicken", name: "Honey Mustard Roll (Chicken)", price: 150 },
+
+      // SHAWARMA ROLLS (RUMALI) - BEEF
+      { id: 221, cat: "Shawarma Rolls • Beef", name: "Normal Roll (Beef)", price: 160 },
+      { id: 222, cat: "Shawarma Rolls • Beef", name: "BBQ Roll (Beef)", price: 160 },
+      { id: 223, cat: "Shawarma Rolls • Beef", name: "Tandoori Roll (Beef)", price: 160 },
+      { id: 224, cat: "Shawarma Rolls • Beef", name: "Peri Peri Roll (Beef) 🌶️", price: 160 },
+      { id: 225, cat: "Shawarma Rolls • Beef", name: "Jalapeno Roll (Beef) 🌶️", price: 160 },
+      { id: 226, cat: "Shawarma Rolls • Beef", name: "Jamaican Jerk Roll (Beef) 🌶️", price: 160 },
+      { id: 227, cat: "Shawarma Rolls • Beef", name: "Hot N Spicy Roll (Beef) 🌶️", price: 160 },
+      { id: 228, cat: "Shawarma Rolls • Beef", name: "Korean Roll (Beef) 🌶️", price: 160 },
+      { id: 229, cat: "Shawarma Rolls • Beef", name: "Cheese Burst Roll (Beef)", price: 160 },
+      { id: 230, cat: "Shawarma Rolls • Beef", name: "Honey Mustard Roll (Beef)", price: 160 },
+
+      // SHAWARMA PLATES - CHICKEN
+      { id: 301, cat: "Shawarma Plates • Chicken", name: "Plate Normal (Chicken)", price: 240 },
+      { id: 302, cat: "Shawarma Plates • Chicken", name: "Plate BBQ (Chicken)", price: 240 },
+      { id: 303, cat: "Shawarma Plates • Chicken", name: "Plate Tandoori (Chicken)", price: 240 },
+      { id: 304, cat: "Shawarma Plates • Chicken", name: "Plate Peri Peri (Chicken) 🌶️", price: 240 },
+      { id: 305, cat: "Shawarma Plates • Chicken", name: "Plate Jalapeno (Chicken) 🌶️", price: 240 },
+      { id: 306, cat: "Shawarma Plates • Chicken", name: "Plate Jamaican Jerk (Chicken) 🌶️", price: 240 },
+      { id: 307, cat: "Shawarma Plates • Chicken", name: "Plate Hot N Spicy (Chicken) 🌶️", price: 240 },
+      { id: 308, cat: "Shawarma Plates • Chicken", name: "Plate Korean (Chicken) 🌶️", price: 240 },
+      { id: 309, cat: "Shawarma Plates • Chicken", name: "Plate Cheese Burst (Chicken)", price: 240 },
+      { id: 310, cat: "Shawarma Plates • Chicken", name: "Plate Honey Mustard (Chicken)", price: 240 },
+
+      // SHAWARMA PLATES - BEEF
+      { id: 321, cat: "Shawarma Plates • Beef", name: "Plate Normal (Beef)", price: 250 },
+      { id: 322, cat: "Shawarma Plates • Beef", name: "Plate BBQ (Beef)", price: 250 },
+      { id: 323, cat: "Shawarma Plates • Beef", name: "Plate Tandoori (Beef)", price: 250 },
+      { id: 324, cat: "Shawarma Plates • Beef", name: "Plate Peri Peri (Beef) 🌶️", price: 250 },
+      { id: 325, cat: "Shawarma Plates • Beef", name: "Plate Jalapeno (Beef) 🌶️", price: 250 },
+      { id: 326, cat: "Shawarma Plates • Beef", name: "Plate Jamaican Jerk (Beef) 🌶️", price: 250 },
+      { id: 327, cat: "Shawarma Plates • Beef", name: "Plate Hot N Spicy (Beef) 🌶️", price: 250 },
+      { id: 328, cat: "Shawarma Plates • Beef", name: "Plate Korean (Beef) 🌶️", price: 250 },
+      { id: 329, cat: "Shawarma Plates • Beef", name: "Plate Cheese Burst (Beef)", price: 250 },
+      { id: 330, cat: "Shawarma Plates • Beef", name: "Plate Honey Mustard (Beef)", price: 250 },
+
+      // LOADED FRIES
+      { id: 401, cat: "Loaded Fries", name: "Chicken Loaded Fries (Full)", price: 250 },
+      { id: 402, cat: "Loaded Fries", name: "Chicken Loaded Fries (Half)", price: 160 },
+      { id: 403, cat: "Loaded Fries", name: "Cheeseburst Loaded Fries (Full)", price: 280 },
+      { id: 404, cat: "Loaded Fries", name: "Cheeseburst Loaded Fries (Half)", price: 170 },
+      { id: 405, cat: "Loaded Fries", name: "Beef Loaded Fries (Full)", price: 260 },
+      { id: 406, cat: "Loaded Fries", name: "Beef Loaded Fries (Half)", price: 170 },
+      { id: 407, cat: "Loaded Fries", name: "Beef Cheeseburst Loaded Fries (Full)", price: 300 },
+      { id: 408, cat: "Loaded Fries", name: "Beef Cheeseburst Loaded Fries (Half)", price: 180 },
+
+      // ADD-ONS
+      { id: 451, cat: "Add-Ons", name: "Add-On Full Meat", price: 40 },
+      { id: 452, cat: "Add-Ons", name: "Add-On Cheese", price: 20 },
+      { id: 453, cat: "Add-Ons", name: "Add-On Rumali", price: 10 },
+      { id: 454, cat: "Add-Ons", name: "Add-On Mix", price: 20 },
+
+      // LIME
+      { id: 501, cat: "Lime Juice", name: "Lime Juice", price: 25 },
+      { id: 502, cat: "Lime Juice", name: "Lime Soda Salt", price: 30 },
+      { id: 503, cat: "Lime Juice", name: "Lime Soda Sugar", price: 30 },
+      { id: 504, cat: "Lime Juice", name: "Mint Lime", price: 40 },
+
+      // MOJITOS
+      { id: 601, cat: "Mojitos", name: "Green Apple Mojito", price: 50 },
+      { id: 602, cat: "Mojitos", name: "Mango Mojito", price: 50 },
+      { id: 603, cat: "Mojitos", name: "Blueberry Mojito", price: 60 },
+      { id: 604, cat: "Mojitos", name: "Passion Fruit Mojito", price: 60 },
+
+      // AVIL MILK
+      { id: 701, cat: "Avil Milk", name: "Normal Avil Milk", price: 50 },
+      { id: 702, cat: "Avil Milk", name: "Diet Avil Milk", price: 50 },
+      { id: 703, cat: "Avil Milk", name: "Chocolate Avil Milk", price: 70 },
+      { id: 704, cat: "Avil Milk", name: "Vanilla Avil Milk", price: 70 },
+      { id: 705, cat: "Avil Milk", name: "Caramel Avil Milk", price: 70 },
+      { id: 706, cat: "Avil Milk", name: "Peanut Avil Milk", price: 80 },
+
+      // SHAKES
+      { id: 801, cat: "Shakes", name: "Sharjah Shake", price: 50 },
+      { id: 802, cat: "Shakes", name: "Chocolate Shake", price: 60 },
+      { id: 803, cat: "Shakes", name: "Vanilla Shake", price: 60 },
+      { id: 804, cat: "Shakes", name: "Butterscotch Shake", price: 60 }
     ];
 
     let cart = {};
@@ -131,23 +238,35 @@
 
     function renderMenu() {
       const container = document.getElementById('menuContainer');
-      container.innerHTML = menuItems.map(item => `
-        <div class="card item-row">
-          <div>
-            <div class="item-name">${item.name}</div>
-            <div class="item-price">₹${item.price}</div>
+      let html = '';
+      let currentCat = '';
+
+      menuItems.forEach(item => {
+        if (item.cat !== currentCat) {
+          currentCat = item.cat;
+          html += `<div class="cat-title">${currentCat}</div>`;
+        }
+
+        html += `
+          <div class="card item-row">
+            <div>
+              <div class="item-name">${item.name}</div>
+              <div class="item-price">₹${item.price}</div>
+            </div>
+            <div>
+              ${cart[item.id] ? `
+                <button class="counter-btn" onclick="updateQty(${item.id}, -1)">-</button>
+                <span class="qty-display">${cart[item.id]}</span>
+                <button class="counter-btn" onclick="updateQty(${item.id}, 1)">+</button>
+              ` : `
+                <button class="counter-btn" onclick="updateQty(${item.id}, 1)">+</button>
+              `}
+            </div>
           </div>
-          <div>
-            ${cart[item.id] ? `
-              <button class="counter-btn" onclick="updateQty(${item.id}, -1)">-</button>
-              <span class="qty-display">${cart[item.id]}</span>
-              <button class="counter-btn" onclick="updateQty(${item.id}, 1)">+</button>
-            ` : `
-              <button class="counter-btn" onclick="updateQty(${item.id}, 1)">+</button>
-            `}
-          </div>
-        </div>
-      `).join('');
+        `;
+      });
+
+      container.innerHTML = html;
       calcTotal();
     }
 
