@@ -7,7 +7,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: const FirebaseOptions(
-      apiKey: "AIzaSyC9jeLa4fifRH24dewecrUt",
+      apiKey: "AIzaSyC9jeLa4fifRH24dewecrUfv-tVoErIonc",
       appId: "1:891475422514:web:cb7dee5c5edf2e45e37b2b",
       messagingSenderId: "891475422514",
       projectId: "wraps-on-wheels",
@@ -38,7 +38,7 @@ class WrapsApp extends StatelessWidget {
 }
 
 // -------------------------------------------------------------
-// AUTH GATE: चेक करेगा कि यूज़र लॉग इन है या नहीं
+// AUTH GATE: चेक करेगा कि यूज़र पहले से लॉग इन है या नहीं
 // -------------------------------------------------------------
 class AuthGate extends StatelessWidget {
   const AuthGate({super.key});
@@ -63,7 +63,7 @@ class AuthGate extends StatelessWidget {
 }
 
 // -------------------------------------------------------------
-// LOGIN SCREEN (लॉगिन होते ही तुरंत अंदर ले जाएगी)
+// LOGIN SCREEN
 // -------------------------------------------------------------
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -90,7 +90,6 @@ class _LoginScreenState extends State<LoginScreen> {
         password: _passwordController.text.trim(),
       );
 
-      // सफल होते ही सीधे मेन ऐप स्क्रीन खोल देगा
       if (mounted) {
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: (context) => const MainNavigationScreen()),
@@ -192,7 +191,7 @@ class _LoginScreenState extends State<LoginScreen> {
 }
 
 // -------------------------------------------------------------
-// MAIN NAVIGATION (KITCHEN, COUNTER, ORDERS, SETTINGS)
+// MAIN NAVIGATION
 // -------------------------------------------------------------
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -258,7 +257,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 }
 
 // -------------------------------------------------------------
-// 1. KITCHEN SCREEN (DONE टैब में Serve Order बटन हटा दिया गया है)
+// 1. KITCHEN SCREEN
 // -------------------------------------------------------------
 class KitchenScreen extends StatefulWidget {
   const KitchenScreen({super.key});
