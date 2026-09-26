@@ -19,7 +19,7 @@ home: const AuthScreen(),
 );
 }
 }
-​// Global Models
+​// ================= GLOBAL DATA & MODELS =================
 class Product {
 final String id;
 final String name;
@@ -95,6 +95,14 @@ price: 180.00,
 image: "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=500&q=80",
 description: "Clean retro street style sneakers crafted with lightweight cushioning and soft rubber soles.",
 ),
+Product(
+id: "4",
+name: "Designer UV Sunglasses",
+category: "Accessories",
+price: 45.00,
+image: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=500&q=80",
+description: "Polarized UV400 protective stylish unisex sunglasses.",
+),
 ];
 ​List<Product> globalFavorites = [globalProducts[0]];
 List<CartItem> globalCart = [
@@ -117,19 +125,16 @@ address: "Wraps on wheels, Attakulangara, Main Road, FPSRA87, Thiruvananthapuram
 phone: "9310758470",
 isSelected: true,
 ),
-AddressItem(
-name: "Sunny",
-address: "Attakulangara, Otta Street, Near Hotel Indraprastha",
-phone: "9310758470",
-isSelected: false,
-),
 ];
-​String userProfileName = "Sunan Kumar";
+​// Profile State
+String userProfileName = "Sunan Kumar";
 String userProfilePhone = "9310758470";
 String userProfileEmail = "sunankumar77@gmail.com";
 String userProfilePic = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&q=80";
-String selectedPaymentMethod = "UPI (Google Pay / PhonePe / Paytm)";
-​final List<String> availableAvatars = [
+String selectedPaymentMethod = "UPI (Google Pay / PhonePe)";
+bool notificationEnabled = true;
+String currentLanguage = "English";
+​final List<String> defaultAvatars = [
 "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&q=80",
 "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=300&q=80",
 "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&q=80",
@@ -137,7 +142,7 @@ String selectedPaymentMethod = "UPI (Google Pay / PhonePe / Paytm)";
 "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&q=80",
 "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=300&q=80",
 ];
-​// Authentication Screen
+​// ================= AUTH SCREEN (LOGIN, SIGNUP, PHONE/EMAIL, FORGOT) =================
 class AuthScreen extends StatefulWidget {
 const AuthScreen({super.key});
 ​@override
@@ -145,50 +150,35 @@ State<AuthScreen> createState() => _AuthScreenState();
 }
 ​class _AuthScreenState extends State<AuthScreen> {
 bool isLogin = true;
-bool isPhoneMode = false;
+bool usePhoneAuth = false;
 bool isPasswordVisible = false;
-​final TextEditingController nameCtrl = TextEditingController();
-final TextEditingController inputCtrl = TextEditingController();
-final TextEditingController passwordCtrl = TextEditingController();
-​@override
-void initState() {
-super.initState();
-inputCtrl.text = "sunankumar77@gmail.com";
-passwordCtrl.text = "815313Aam";
-}
-​void _submit() {
-String input = inputCtrl.text.trim();
-String pass = passwordCtrl.text.trim();
-​if (input.isEmpty || pass.isEmpty) {
+​final TextEditingController nameController = TextEditingController();
+final TextEditingController inputController = TextEditingController(text: "sunankumar77@gmail.com");
+final TextEditingController passwordController = TextEditingController(text: "815313Aam");
+​void _submitAuth() {
+final input = inputController.text.trim();
+final pwd = passwordController.text.trim();
+​if (input.isEmpty || pwd.isEmpty) {
 ScaffoldMessenger.of(context).showSnackBar(
-const SnackBar(
-backgroundColor: Colors.redAccent,
-content: Text("Please fill all required fields!"),
-),
+const SnackBar(content: Text("Please fill all required fields")),
 );
 return;
 }
-​if (!isLogin && nameCtrl.text.trim().isNotEmpty) {
-userProfileName = nameCtrl.text.trim();
+​if (!isLogin && nameController.text.trim().isNotEmpty) {
+userProfileName = nameController.text.trim();
 }
 ​if (input.contains('@')) {
 userProfileEmail = input;
 } else {
 userProfilePhone = input;
 }
-​ScaffoldMessenger.of(context).showSnackBar(
-SnackBar(
-backgroundColor: const Color(0xFFE86B35),
-content: Text(isLogin ? "Welcome back, $userProfileName!" : "Account created successfully!"),
-),
-);
 ​Navigator.pushReplacement(
 context,
 MaterialPageRoute(builder: (context) => const MainNavigationScreen()),
 );
 }
-​void _showForgotPasswordSheet() {
-final TextEditingController resetCtrl = TextEditingController(text: inputCtrl.text);
+​void _openForgotPassword() {
+final resetCtrl = TextEditingController(text: inputController.text);
 showModalBottomSheet(
 context: context,
 isScrollControlled: true,
@@ -205,41 +195,37 @@ child: Column(
 mainAxisSize: MainAxisSize.min,
 crossAxisAlignment: CrossAxisAlignment.start,
 children: [
-const Text("Forgot Password", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+const Row(
+children: [
+Icon(Icons.lock_reset, color: Color(0xFFE86B35)),
+SizedBox(width: 8),
+Text("Forgot Password", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+],
+),
 const SizedBox(height: 8),
-const Text("Enter your registered email or phone number to receive a reset OTP.", style: TextStyle(color: Colors.grey, fontSize: 13)),
+const Text(
+"Enter your registered Email ID or Phone Number to receive a 6-digit OTP verification code.",
+style: TextStyle(color: Colors.grey, fontSize: 13),
+),
 const SizedBox(height: 16),
 TextField(
 controller: resetCtrl,
 decoration: InputDecoration(
 hintText: "Email or Phone Number",
+prefixIcon: const Icon(Icons.verified_user_outlined),
 filled: true,
 fillColor: const Color(0xFFFBF8F5),
 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
 ),
 ),
-const SizedBox(height: 20),
+const SizedBox(height: 18),
 SizedBox(
 width: double.infinity,
 height: 48,
 child: ElevatedButton(
 onPressed: () {
 Navigator.pop(context);
-showDialog(
-context: context,
-builder: (ctx) => AlertDialog(
-shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-title: const Text("OTP Sent Successfully"),
-content: Text("A password reset link & OTP has been sent to ${resetCtrl.text}."),
-actions: [
-ElevatedButton(
-onPressed: () => Navigator.pop(ctx),
-style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE86B35)),
-child: const Text("OK", style: TextStyle(color: Colors.white)),
-)
-],
-),
-);
+_showOtpVerificationDialog(resetCtrl.text);
 },
 style: ElevatedButton.styleFrom(
 backgroundColor: const Color(0xFFE86B35),
@@ -253,6 +239,44 @@ child: const Text("Send Reset OTP", style: TextStyle(color: Colors.white, fontWe
 ),
 );
 }
+​void _showOtpVerificationDialog(String target) {
+final otpCtrl = TextEditingController();
+showDialog(
+context: context,
+builder: (c) => AlertDialog(
+shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+title: const Text("Enter 6-Digit OTP"),
+content: Column(
+mainAxisSize: MainAxisSize.min,
+children: [
+Text("OTP code has been sent to $target. Enter code (e.g. 123456):", style: const TextStyle(fontSize: 13, color: Colors.grey)),
+const SizedBox(height: 14),
+TextField(
+controller: otpCtrl,
+keyboardType: TextInputType.number,
+maxLength: 6,
+textAlign: TextAlign.center,
+style: const TextStyle(letterSpacing: 6, fontWeight: FontWeight.bold, fontSize: 18),
+decoration: const InputDecoration(border: OutlineInputBorder(), hintText: "123456"),
+),
+],
+),
+actions: [
+TextButton(onPressed: () => Navigator.pop(c), child: const Text("Cancel")),
+ElevatedButton(
+onPressed: () {
+Navigator.pop(c);
+ScaffoldMessenger.of(context).showSnackBar(
+const SnackBar(content: Text("OTP Verified! You can now login with your new password.")),
+);
+},
+style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE86B35)),
+child: const Text("Verify & Reset", style: TextStyle(color: Colors.white)),
+)
+],
+),
+);
+}
 ​@override
 Widget build(BuildContext context) {
 return Scaffold(
@@ -260,28 +284,30 @@ backgroundColor: const Color(0xFFFBF8F5),
 body: SafeArea(
 child: Center(
 child: SingleChildScrollView(
-padding: const EdgeInsets.symmetric(horizontal: 26.0, vertical: 20),
+padding: const EdgeInsets.symmetric(horizontal: 26.0),
 child: Column(
 children: [
+// App Logo
 Container(
-width: 70,
-height: 70,
+width: 65,
+height: 65,
 decoration: BoxDecoration(
 color: const Color(0xFFE86B35),
-borderRadius: BorderRadius.circular(22),
+borderRadius: BorderRadius.circular(20),
 boxShadow: [
-BoxShadow(color: const Color(0xFFE86B35).withOpacity(0.35), blurRadius: 15, offset: const Offset(0, 6)),
+BoxShadow(color: const Color(0xFFE86B35).withOpacity(0.3), blurRadius: 15, offset: const Offset(0, 5)),
 ],
 ),
-child: const Icon(Icons.shopping_bag_outlined, color: Colors.white, size: 40),
+child: const Icon(Icons.shopping_bag_outlined, color: Colors.white, size: 36),
 ),
-const SizedBox(height: 16),
-const Text("FASHION", style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, letterSpacing: 2)),
+const SizedBox(height: 14),
+const Text("FASHION", style: TextStyle(fontSize: 26, fontWeight: FontWeight.w900, letterSpacing: 2)),
 Text(
 isLogin ? "Welcome back! Login to explore trends" : "Create account to buy & track orders",
 style: const TextStyle(color: Colors.grey, fontSize: 13),
 ),
 const SizedBox(height: 24),
+​// Toggle Login / Sign Up
 Container(
 padding: const EdgeInsets.all(4),
 decoration: BoxDecoration(color: Colors.grey.shade200, borderRadius: BorderRadius.circular(14)),
@@ -292,8 +318,17 @@ child: GestureDetector(
 onTap: () => setState(() => isLogin = true),
 child: Container(
 padding: const EdgeInsets.symmetric(vertical: 10),
-decoration: BoxDecoration(color: isLogin ? Colors.white : Colors.transparent, borderRadius: BorderRadius.circular(10)),
-child: Center(child: Text("Login", style: TextStyle(fontWeight: FontWeight.bold, color: isLogin ? const Color(0xFFE86B35) : Colors.black54))),
+decoration: BoxDecoration(
+color: isLogin ? Colors.white : Colors.transparent,
+borderRadius: BorderRadius.circular(10),
+boxShadow: isLogin ? [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4)] : [],
+),
+child: Center(
+child: Text(
+"Login",
+style: TextStyle(fontWeight: FontWeight.bold, color: isLogin ? const Color(0xFFE86B35) : Colors.black54),
+),
+),
 ),
 ),
 ),
@@ -302,8 +337,17 @@ child: GestureDetector(
 onTap: () => setState(() => isLogin = false),
 child: Container(
 padding: const EdgeInsets.symmetric(vertical: 10),
-decoration: BoxDecoration(color: !isLogin ? Colors.white : Colors.transparent, borderRadius: BorderRadius.circular(10)),
-child: Center(child: Text("Sign Up", style: TextStyle(fontWeight: FontWeight.bold, color: !isLogin ? const Color(0xFFE86B35) : Colors.black54))),
+decoration: BoxDecoration(
+color: !isLogin ? Colors.white : Colors.transparent,
+borderRadius: BorderRadius.circular(10),
+boxShadow: !isLogin ? [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4)] : [],
+),
+child: Center(
+child: Text(
+"Sign Up",
+style: TextStyle(fontWeight: FontWeight.bold, color: !isLogin ? const Color(0xFFE86B35) : Colors.black54),
+),
+),
 ),
 ),
 ),
@@ -311,49 +355,55 @@ child: Center(child: Text("Sign Up", style: TextStyle(fontWeight: FontWeight.bol
 ),
 ),
 const SizedBox(height: 14),
-Align(
-alignment: Alignment.centerRight,
-child: TextButton.icon(
+​// Toggle Email vs Phone Login
+Row(
+mainAxisAlignment: MainAxisAlignment.end,
+children: [
+TextButton.icon(
 onPressed: () {
 setState(() {
-isPhoneMode = !isPhoneMode;
-inputCtrl.text = isPhoneMode ? "9310758470" : "sunankumar77@gmail.com";
+usePhoneAuth = !usePhoneAuth;
+inputController.text = usePhoneAuth ? "9310758470" : "sunankumar77@gmail.com";
 });
 },
-icon: Icon(isPhoneMode ? Icons.email_outlined : Icons.phone_android, size: 16, color: const Color(0xFFE86B35)),
+icon: Icon(usePhoneAuth ? Icons.email_outlined : Icons.phone_android, size: 16, color: const Color(0xFFE86B35)),
 label: Text(
-isPhoneMode ? "Use Email ID" : "Use Phone Number",
-style: const TextStyle(color: Color(0xFFE86B35), fontWeight: FontWeight.bold, fontSize: 13),
+usePhoneAuth ? "Use Email ID" : "Use Phone Number",
+style: const TextStyle(color: Color(0xFFE86B35), fontSize: 12, fontWeight: FontWeight.bold),
 ),
 ),
+],
 ),
+​// Sign Up Full Name Field
 if (!isLogin) ...[
 TextField(
-controller: nameCtrl,
+controller: nameController,
 decoration: InputDecoration(
 hintText: "Full Name",
 prefixIcon: const Icon(Icons.person_outline),
 filled: true,
 fillColor: Colors.white,
-border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
 ),
 ),
 const SizedBox(height: 14),
 ],
+​// Email or Phone input
 TextField(
-controller: inputCtrl,
-keyboardType: isPhoneMode ? TextInputType.phone : TextInputType.emailAddress,
+controller: inputController,
+keyboardType: usePhoneAuth ? TextInputType.phone : TextInputType.emailAddress,
 decoration: InputDecoration(
-hintText: isPhoneMode ? "Phone Number" : "Email ID",
-prefixIcon: Icon(isPhoneMode ? Icons.phone_outlined : Icons.alternate_email),
+hintText: usePhoneAuth ? "Phone Number (e.g. 9310758470)" : "Email ID",
+prefixIcon: Icon(usePhoneAuth ? Icons.phone_outlined : Icons.alternate_email),
 filled: true,
 fillColor: Colors.white,
-border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
 ),
 ),
 const SizedBox(height: 14),
+​// Password input with visibility toggle
 TextField(
-controller: passwordCtrl,
+controller: passwordController,
 obscureText: !isPasswordVisible,
 decoration: InputDecoration(
 hintText: "Password",
@@ -364,30 +414,35 @@ onPressed: () => setState(() => isPasswordVisible = !isPasswordVisible),
 ),
 filled: true,
 fillColor: Colors.white,
-border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
 ),
 ),
+​// Forgot Password link
 if (isLogin) ...[
 Align(
 alignment: Alignment.centerRight,
 child: TextButton(
-onPressed: _showForgotPasswordSheet,
+onPressed: _openForgotPassword,
 child: const Text("Forgot Password?", style: TextStyle(color: Colors.grey, fontSize: 12)),
 ),
 ),
 ] else ...[
-const SizedBox(height: 16),
+const SizedBox(height: 18),
 ],
+​// Submit Button
 SizedBox(
 width: double.infinity,
 height: 50,
 child: ElevatedButton(
-onPressed: _submit,
+onPressed: _submitAuth,
 style: ElevatedButton.styleFrom(
 backgroundColor: const Color(0xFFE86B35),
 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
 ),
-child: Text(isLogin ? "Log In" : "Create Account", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+child: Text(
+isLogin ? "Log In" : "Create Account",
+style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+),
 ),
 ),
 ],
@@ -398,7 +453,7 @@ child: Text(isLogin ? "Log In" : "Create Account", style: const TextStyle(color:
 );
 }
 }
-​// Main Navigation
+​// ================= MAIN NAVIGATION =================
 class MainNavigationScreen extends StatefulWidget {
 const MainNavigationScreen({super.key});
 ​@override
@@ -412,7 +467,7 @@ final List<Widget> pages = [
 HomeScreen(onRefresh: () => setState(() {})),
 const SavedScreen(),
 CartScreen(onRefresh: () => setState(() {})),
-ProfileScreen(onRefresh: () => setState(() {})),
+ProfileSettingsScreen(onRefresh: () => setState(() {})),
 ];
 ​return Scaffold(
 body: pages[_currentIndex],
@@ -434,14 +489,14 @@ items: const [
 BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: 'Home'),
 BottomNavigationBarItem(icon: Icon(Icons.favorite_border), label: 'Saved'),
 BottomNavigationBarItem(icon: Icon(Icons.shopping_bag_outlined), label: 'Cart'),
-BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Profile'),
+BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Account'),
 ],
 ),
 ),
 );
 }
 }
-​// Home Screen
+​// ================= HOME SCREEN WITH SEARCH LENS =================
 class HomeScreen extends StatefulWidget {
 final VoidCallback onRefresh;
 const HomeScreen({super.key, required this.onRefresh});
@@ -450,14 +505,73 @@ State<HomeScreen> createState() => _HomeScreenState();
 }
 ​class _HomeScreenState extends State<HomeScreen> {
 int selectedCategoryIndex = 0;
-final List<String> categories = ["All", "Tops", "Footwear", "Bottoms"];
-​final List<Map<String, String>> categoryIcons = [
-{"name": "Kurta pajama", "img": "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=200&q=80"},
-{"name": "Sunglasses", "img": "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=200&q=80"},
-{"name": "Kids shoes", "img": "https://images.unsplash.com/photo-1514989940723-e8e51635b782?w=200&q=80"},
-{"name": "Formal shoes", "img": "https://images.unsplash.com/photo-1533867617858-e7b97e060509?w=200&q=80"},
-{"name": "Sandals", "img": "https://images.unsplash.com/photo-1603808033192-082d6919d3e1?w=200&q=80"},
-];
+final List<String> categories = ["All", "Tops", "Footwear", "Accessories"];
+​void _openSearchLens() {
+showModalBottomSheet(
+context: context,
+shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+builder: (context) => Padding(
+padding: const EdgeInsets.all(22),
+child: Column(
+mainAxisSize: MainAxisSize.min,
+children: [
+const Row(
+children: [
+Icon(Icons.center_focus_strong, color: Color(0xFFE86B35), size: 28),
+SizedBox(width: 10),
+Text("Search Lens - Visual Match", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+],
+),
+const SizedBox(height: 12),
+const Text(
+"Take a photo of any cloth, shoe or outfit from your camera or gallery to find matching items instantly.",
+style: TextStyle(color: Colors.grey, fontSize: 13),
+),
+const SizedBox(height: 20),
+Row(
+children: [
+Expanded(
+child: ElevatedButton.icon(
+onPressed: () {
+Navigator.pop(context);
+ScaffoldMessenger.of(context).showSnackBar(
+const SnackBar(content: Text("Camera Lens opened! Matching visual outfits...")),
+);
+},
+icon: const Icon(Icons.camera_alt, color: Colors.white),
+label: const Text("Camera Lens", style: TextStyle(color: Colors.white)),
+style: ElevatedButton.styleFrom(
+backgroundColor: const Color(0xFFE86B35),
+padding: const EdgeInsets.symmetric(vertical: 12),
+shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+),
+),
+),
+const SizedBox(width: 12),
+Expanded(
+child: OutlinedButton.icon(
+onPressed: () {
+Navigator.pop(context);
+ScaffoldMessenger.of(context).showSnackBar(
+const SnackBar(content: Text("Gallery Photo picked! 4 matches found.")),
+);
+},
+icon: const Icon(Icons.photo_library, color: Color(0xFFE86B35)),
+label: const Text("Gallery", style: TextStyle(color: Color(0xFFE86B35))),
+style: OutlinedButton.styleFrom(
+padding: const EdgeInsets.symmetric(vertical: 12),
+side: const BorderSide(color: Color(0xFFE86B35)),
+shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+),
+),
+),
+],
+)
+],
+),
+),
+);
+}
 ​@override
 Widget build(BuildContext context) {
 final filtered = selectedCategoryIndex == 0
@@ -469,6 +583,7 @@ padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
 child: Column(
 crossAxisAlignment: CrossAxisAlignment.start,
 children: [
+// Top Bar
 Row(
 mainAxisAlignment: MainAxisAlignment.spaceBetween,
 children: [
@@ -485,7 +600,7 @@ Column(
 crossAxisAlignment: CrossAxisAlignment.start,
 children: [
 const Text("FASHION", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18, letterSpacing: 1)),
-Text("Deliver to: {globalAddresses.firstWhere((e) => e.isSelected, orElse: () => globalAddresses.first).name}", style: const TextStyle(color: Colors.grey, fontSize: 11)),
+Text("Deliver to: $userProfileName", style: const TextStyle(color: Colors.grey, fontSize: 11)),
 ],
 ),
 ],
@@ -494,58 +609,37 @@ IconButton(onPressed: () {}, icon: const Icon(Icons.notifications_none_outlined)
 ],
 ),
 const SizedBox(height: 16),
+​// Search Bar with Visual Search Lens
 Container(
-padding: const EdgeInsets.symmetric(horizontal: 16),
+padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
 decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 8)]),
-child: const TextField(
+child: Row(
+children: [
+const Icon(Icons.search, color: Colors.grey),
+const SizedBox(width: 8),
+const Expanded(
+child: TextField(
 decoration: InputDecoration(
-icon: Icon(Icons.search, color: Colors.grey),
 border: InputBorder.none,
-hintText: "Search shoes, hoodies, sunglasses...",
+hintText: "Search shoes, hoodies, styles...",
 hintStyle: TextStyle(color: Colors.grey, fontSize: 13),
 ),
 ),
 ),
-const SizedBox(height: 16),
-SizedBox(
-height: 90,
-child: ListView.separated(
-scrollDirection: Axis.horizontal,
-itemCount: categoryIcons.length,
-separatorBuilder: (_, __) => const SizedBox(width: 14),
-itemBuilder: (context, idx) {
-final cat = categoryIcons[idx];
-return Column(
-children: [
-Container(
-width: 58,
-height: 58,
-decoration: BoxDecoration(
-shape: BoxShape.circle,
-border: Border.all(color: Colors.orange.shade100, width: 2),
-image: DecorationImage(image: NetworkImage(cat["img"]!), fit: BoxFit.cover),
+IconButton(
+icon: const Icon(Icons.mic, color: Colors.grey, size: 20),
+onPressed: () {},
 ),
+IconButton(
+icon: const Icon(Icons.center_focus_strong, color: Color(0xFFE86B35), size: 22),
+tooltip: "Search Lens",
+onPressed: _openSearchLens,
 ),
-const SizedBox(height: 6),
-Text(cat["name"]!, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
-],
-);
-},
-),
-),
-const SizedBox(height: 14),
-const Text("Shopping for others?", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-const SizedBox(height: 10),
-Row(
-children: [
-_buildBannerCard("Women", Colors.purple.shade50),
-const SizedBox(width: 10),
-_buildBannerCard("Gen Z", Colors.indigo.shade50),
-const SizedBox(width: 10),
-_buildBannerCard("Kids", Colors.amber.shade50),
 ],
 ),
-const SizedBox(height: 20),
+),
+const SizedBox(height: 18),
+​// Category Chips
 SizedBox(
 height: 36,
 child: ListView.separated(
@@ -571,7 +665,8 @@ child: Text(categories[index], style: TextStyle(color: isSelected ? Colors.white
 ),
 ),
 const SizedBox(height: 20),
-const Text("Popular Clothes & Shoes", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+​// Products Grid
+const Text("Trending Clothes & Shoes", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
 const SizedBox(height: 12),
 GridView.builder(
 shrinkWrap: true,
@@ -600,7 +695,7 @@ ClipRRect(borderRadius: BorderRadius.circular(12), child: Image.network(prod.ima
 const SizedBox(height: 8),
 Text(prod.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
 const SizedBox(height: 4),
-Text("\${prod.price.toStringAsFixed(2)}", style: const TextStyle(color: Color(0xFFE86B35), fontWeight: FontWeight.bold, fontSize: 14)),
+Text("$${prod.price.toStringAsFixed(2)}", style: const TextStyle(color: Color(0xFFE86B35), fontWeight: FontWeight.bold, fontSize: 14)),
 ],
 ),
 ),
@@ -612,17 +707,8 @@ Text("\${prod.price.toStringAsFixed(2)}", style: const TextStyle(color: Color(0x
 ),
 );
 }
-​Widget _buildBannerCard(String label, Color bg) {
-return Expanded(
-child: Container(
-padding: const EdgeInsets.symmetric(vertical: 14),
-decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(14)),
-child: Center(child: Text(label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13))),
-),
-);
 }
-}
-​// Wishlist Screen
+​// ================= SAVED SCREEN =================
 class SavedScreen extends StatefulWidget {
 const SavedScreen({super.key});
 ​@override
@@ -657,7 +743,7 @@ onPressed: () => setState(() => globalFavorites.removeAt(index)),
 );
 }
 }
-​// Product Detail Screen
+​// ================= DETAILS SCREEN =================
 class ProductDetailScreen extends StatefulWidget {
 final Product product;
 const ProductDetailScreen({super.key, required this.product});
@@ -774,7 +860,7 @@ child: const Text("Buy Now", style: TextStyle(color: Colors.white, fontWeight: F
 );
 }
 }
-​// Live Order Tracking Screen
+​// ================= LIVE ORDER TRACKING SCREEN =================
 class OrderTrackingScreen extends StatelessWidget {
 final OrderItem order;
 const OrderTrackingScreen({super.key, required this.order});
@@ -809,7 +895,7 @@ children: [
 Text(order.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
 const SizedBox(height: 4),
 Text("Status: ${order.status}", style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 13)),
-Text("Payment: $selectedPaymentMethod", style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
+Text("Arriving by tomorrow evening", style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
 ],
 ),
 ),
@@ -823,35 +909,6 @@ _buildTrackingStep("Order Confirmed", "Item received by store", true),
 _buildTrackingStep("Shipped from Warehouse", "Courier picked up your package", order.currentStep >= 2),
 _buildTrackingStep("Out for Delivery", "Delivery executive is arriving near your address", order.currentStep >= 3),
 _buildTrackingStep("Delivered", "Delivered at your doorstep", order.currentStep >= 4, isLast: true),
-const SizedBox(height: 24),
-Container(
-padding: const EdgeInsets.all(16),
-decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
-child: Row(
-mainAxisAlignment: MainAxisAlignment.spaceBetween,
-children: [
-const Row(
-children: [
-CircleAvatar(radius: 20, child: Icon(Icons.delivery_dining)),
-SizedBox(width: 12),
-Column(
-crossAxisAlignment: CrossAxisAlignment.start,
-children: [
-Text("Delivery Agent: Rajesh Kumar", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-Text("Verified Delivery Partner", style: TextStyle(color: Colors.grey, fontSize: 11)),
-],
-),
-],
-),
-IconButton(
-icon: const Icon(Icons.phone, color: Colors.green),
-onPressed: () {
-ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Calling delivery agent (+91 9876543210)...")));
-},
-),
-],
-),
-),
 ],
 ),
 ),
@@ -869,11 +926,7 @@ backgroundColor: isCompleted ? const Color(0xFFE86B35) : Colors.grey.shade300,
 child: Icon(Icons.check, size: 14, color: isCompleted ? Colors.white : Colors.grey),
 ),
 if (!isLast)
-Container(
-width: 2,
-height: 44,
-color: isCompleted ? const Color(0xFFE86B35) : Colors.grey.shade300,
-),
+Container(width: 2, height: 44, color: isCompleted ? const Color(0xFFE86B35) : Colors.grey.shade300),
 ],
 ),
 const SizedBox(width: 14),
@@ -891,7 +944,7 @@ const SizedBox(height: 14),
 );
 }
 }
-​// Cart Screen
+​// ================= CART SCREEN =================
 class CartScreen extends StatefulWidget {
 final VoidCallback onRefresh;
 const CartScreen({super.key, required this.onRefresh});
@@ -963,9 +1016,15 @@ padding: const EdgeInsets.all(20),
 decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
 child: Column(
 children: [
-Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text("Payment Method:", style: TextStyle(fontSize: 13, color: Colors.grey)), Text(selectedPaymentMethod, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFFE86B35)))]),
-const SizedBox(height: 8),
-Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text("Total :", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)), Text("\${subtotal.toStringAsFixed(2)}", style: const TextStyle(fontSize: 18, color: Color(0xFFE86B35), fontWeight: FontWeight.bold))]),
+Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+const Text("Payment Method:", style: TextStyle(color: Colors.grey)),
+Text(selectedPaymentMethod, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFFE86B35))),
+]),
+const SizedBox(height: 6),
+Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+const Text("Total :", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+Text("\${subtotal.toStringAsFixed(2)}", style: const TextStyle(fontSize: 18, color: Color(0xFFE86B35), fontWeight: FontWeight.bold)),
+]),
 const SizedBox(height: 16),
 SizedBox(
 width: double.infinity,
@@ -986,7 +1045,7 @@ widget.onRefresh();
 ​Navigator.push(context, MaterialPageRoute(builder: (c) => OrderTrackingScreen(order: newOrder)));
 },
 style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE86B35), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-child: const Text("Checkout & Place Order", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+child: const Text("Pay & Place Order", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
 ),
 ),
 ],
@@ -997,19 +1056,20 @@ child: const Text("Checkout & Place Order", style: TextStyle(color: Colors.white
 );
 }
 }
-​// Profile Screen
-class ProfileScreen extends StatefulWidget {
+​// ================= FLIPKART-STYLE PROFILE & SETTINGS =================
+class ProfileSettingsScreen extends StatefulWidget {
 final VoidCallback onRefresh;
-const ProfileScreen({super.key, required this.onRefresh});
+const ProfileSettingsScreen({super.key, required this.onRefresh});
 ​@override
-State<ProfileScreen> createState() => _ProfileScreenState();
+State<ProfileSettingsScreen> createState() => _ProfileSettingsScreenState();
 }
-​class _ProfileScreenState extends State<ProfileScreen> {
+​class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
+// USER CUSTOM PHOTO / AVATAR PICKER
 void _editProfileSheet() {
 final nameCtrl = TextEditingController(text: userProfileName);
 final phoneCtrl = TextEditingController(text: userProfilePhone);
 final emailCtrl = TextEditingController(text: userProfileEmail);
-final customUrlCtrl = TextEditingController(text: userProfilePic);
+final photoUrlCtrl = TextEditingController(text: userProfilePic);
 ​showModalBottomSheet(
 context: context,
 isScrollControlled: true,
@@ -1023,42 +1083,56 @@ child: Column(
 mainAxisSize: MainAxisSize.min,
 crossAxisAlignment: CrossAxisAlignment.start,
 children: [
-const Text("Edit Profile & Photo", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-const SizedBox(height: 12),
-const Text("Choose Pre-set Avatar:", style: TextStyle(fontSize: 12, color: Colors.grey)),
+const Row(
+children: [
+Icon(Icons.edit_note, color: Color(0xFFE86B35)),
+SizedBox(width: 8),
+Text("Edit Profile & Photo", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+],
+),
+const SizedBox(height: 14),
+​// Choose Avatar
+const Text("Pick Avatar or Enter Custom Photo Link:", style: TextStyle(fontSize: 12, color: Colors.grey)),
 const SizedBox(height: 8),
 SizedBox(
-height: 70,
+height: 65,
 child: ListView.separated(
 scrollDirection: Axis.horizontal,
-itemCount: availableAvatars.length,
+itemCount: defaultAvatars.length,
 separatorBuilder: (_, __) => const SizedBox(width: 10),
 itemBuilder: (context, idx) {
-final pic = availableAvatars[idx];
+final pic = defaultAvatars[idx];
 final isSelected = userProfilePic == pic;
 return GestureDetector(
 onTap: () {
-setSheetState(() => userProfilePic = pic);
-customUrlCtrl.text = pic;
+setSheetState(() {
+userProfilePic = pic;
+photoUrlCtrl.text = pic;
+});
 setState(() {});
 },
 child: Container(
 decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: isSelected ? const Color(0xFFE86B35) : Colors.transparent, width: 3)),
-child: CircleAvatar(radius: 30, backgroundImage: NetworkImage(pic)),
+child: CircleAvatar(radius: 28, backgroundImage: NetworkImage(pic)),
 ),
 );
 },
 ),
 ),
-const SizedBox(height: 14),
+const SizedBox(height: 12),
+​// Custom Photo Link
 TextField(
-controller: customUrlCtrl,
+controller: photoUrlCtrl,
 decoration: const InputDecoration(
-labelText: "Or Enter Your Custom Image URL",
-hintText: "https://your-image-link.jpg",
+labelText: "Custom Photo URL (Google / Cloud Link)",
 prefixIcon: Icon(Icons.link),
 border: OutlineInputBorder(),
 ),
+onChanged: (val) {
+if (val.isNotEmpty) {
+setSheetState(() => userProfilePic = val);
+}
+},
 ),
 const SizedBox(height: 12),
 TextField(controller: nameCtrl, decoration: const InputDecoration(labelText: "Full Name", border: OutlineInputBorder())),
@@ -1073,14 +1147,14 @@ height: 48,
 child: ElevatedButton(
 onPressed: () {
 setState(() {
-userProfileName = nameCtrl.text.isNotEmpty ? nameCtrl.text : userProfileName;
-userProfilePhone = phoneCtrl.text.isNotEmpty ? phoneCtrl.text : userProfilePhone;
-userProfileEmail = emailCtrl.text.isNotEmpty ? emailCtrl.text : userProfileEmail;
-if (customUrlCtrl.text.isNotEmpty) userProfilePic = customUrlCtrl.text.trim();
+userProfileName = nameCtrl.text;
+userProfilePhone = phoneCtrl.text;
+userProfileEmail = emailCtrl.text;
+if (photoUrlCtrl.text.isNotEmpty) userProfilePic = photoUrlCtrl.text;
 });
 widget.onRefresh();
 Navigator.pop(context);
-ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Profile details saved!")));
+ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Profile updated successfully!")));
 },
 style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE86B35)),
 child: const Text("Save Changes", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
@@ -1093,85 +1167,64 @@ child: const Text("Save Changes", style: TextStyle(color: Colors.white, fontWeig
 ),
 );
 }
-​void _openPayments() {
+​// PAYMENT METHODS: CASH, UPI, CARD
+void _openPaymentMethods() {
 showModalBottomSheet(
 context: context,
-shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
 builder: (context) => StatefulBuilder(
 builder: (context, setPaymentState) => Padding(
-padding: const EdgeInsets.all(22),
+padding: const EdgeInsets.all(20),
 child: Column(
 mainAxisSize: MainAxisSize.min,
 crossAxisAlignment: CrossAxisAlignment.start,
 children: [
 const Text("Select Payment Method", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-const SizedBox(height: 6),
-const Text("Choose your preferred mode for faster checkout:", style: TextStyle(color: Colors.grey, fontSize: 12)),
-const SizedBox(height: 16),
-Container(
-margin: const EdgeInsets.only(bottom: 10),
-decoration: BoxDecoration(
-color: selectedPaymentMethod.contains("Cash") ? const Color(0xFFFFF3ED) : Colors.white,
-borderRadius: BorderRadius.circular(12),
-border: Border.all(color: selectedPaymentMethod.contains("Cash") ? const Color(0xFFE86B35) : Colors.grey.shade300),
-),
-child: RadioListTile<String>(
-activeColor: const Color(0xFFE86B35),
-value: "Cash on Delivery (COD)",
+const SizedBox(height: 14),
+​// 1. CASH / COD
+RadioListTile<String>(
+value: "CASH (Cash on Delivery)",
 groupValue: selectedPaymentMethod,
-title: const Text("Cash on Delivery (COD)", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-subtitle: const Text("Pay in cash when order arrives at your door"),
+title: const Text("CASH (Cash on Delivery)", style: TextStyle(fontWeight: FontWeight.bold)),
+subtitle: const Text("Pay in cash when order is delivered"),
 secondary: const Icon(Icons.money, color: Colors.green),
+activeColor: const Color(0xFFE86B35),
 onChanged: (val) {
 setPaymentState(() => selectedPaymentMethod = val!);
 setState(() {});
 Navigator.pop(context);
-ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Selected: $val")));
+ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Payment set to: $val")));
 },
 ),
-),
-Container(
-margin: const EdgeInsets.only(bottom: 10),
-decoration: BoxDecoration(
-color: selectedPaymentMethod.contains("UPI") ? const Color(0xFFFFF3ED) : Colors.white,
-borderRadius: BorderRadius.circular(12),
-border: Border.all(color: selectedPaymentMethod.contains("UPI") ? const Color(0xFFE86B35) : Colors.grey.shade300),
-),
-child: RadioListTile<String>(
-activeColor: const Color(0xFFE86B35),
+​// 2. UPI
+RadioListTile<String>(
 value: "UPI (Google Pay / PhonePe / Paytm)",
 groupValue: selectedPaymentMethod,
-title: const Text("UPI (GPay / PhonePe / Paytm)", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-subtitle: const Text("Pay directly using any installed UPI App"),
+title: const Text("UPI (Google Pay / PhonePe / Paytm)", style: TextStyle(fontWeight: FontWeight.bold)),
+subtitle: const Text("Pay directly from bank using UPI PIN"),
 secondary: const Icon(Icons.account_balance_wallet, color: Colors.blue),
-onChanged: (val) {
-setPaymentState(() => selectedPaymentMethod = val!);
-setState(() {});
-Navigator.pop(context);
-ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Selected: $val")));
-},
-),
-),
-Container(
-decoration: BoxDecoration(
-color: selectedPaymentMethod.contains("Card") ? const Color(0xFFFFF3ED) : Colors.white,
-borderRadius: BorderRadius.circular(12),
-border: Border.all(color: selectedPaymentMethod.contains("Card") ? const Color(0xFFE86B35) : Colors.grey.shade300),
-),
-child: RadioListTile<String>(
 activeColor: const Color(0xFFE86B35),
-value: "Debit / Credit Card",
-groupValue: selectedPaymentMethod,
-title: const Text("Debit / Credit Card", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-subtitle: const Text("Visa, MasterCard, RuPay cards"),
-secondary: const Icon(Icons.credit_card, color: Colors.purple),
 onChanged: (val) {
 setPaymentState(() => selectedPaymentMethod = val!);
 setState(() {});
 Navigator.pop(context);
-ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Selected: $val")));
+ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Payment set to: $val")));
 },
 ),
+​// 3. CARD
+RadioListTile<String>(
+value: "CARD (Debit / Credit / RuPay / Visa)",
+groupValue: selectedPaymentMethod,
+title: const Text("CARD (Credit / Debit Card)", style: TextStyle(fontWeight: FontWeight.bold)),
+subtitle: const Text("Visa, MasterCard, RuPay Card"),
+secondary: const Icon(Icons.credit_card, color: Colors.deepPurple),
+activeColor: const Color(0xFFE86B35),
+onChanged: (val) {
+setPaymentState(() => selectedPaymentMethod = val!);
+setState(() {});
+Navigator.pop(context);
+ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Payment set to: $val")));
+},
 ),
 ],
 ),
@@ -1179,103 +1232,75 @@ ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Selected: $va
 ),
 );
 }
-​void _openSupport() {
-final issueCtrl = TextEditingController();
-Navigator.push(
-context,
-MaterialPageRoute(
-builder: (context) => Scaffold(
-appBar: AppBar(title: const Text("Customer Support"), centerTitle: true),
-body: SingleChildScrollView(
+​// CUSTOMER SUPPORT (EMAIL ✉️, PHONE, CHAT)
+void _openCustomerSupport() {
+showModalBottomSheet(
+context: context,
+shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+builder: (context) => Padding(
 padding: const EdgeInsets.all(20),
 child: Column(
+mainAxisSize: MainAxisSize.min,
 crossAxisAlignment: CrossAxisAlignment.start,
 children: [
-Container(
-padding: const EdgeInsets.all(16),
-decoration: BoxDecoration(
-color: const Color(0xFFFFF3ED),
-borderRadius: BorderRadius.circular(16),
-border: Border.all(color: const Color(0xFFE86B35).withOpacity(0.3)),
-),
-child: const Row(
+const Row(
 children: [
-Icon(Icons.headset_mic_outlined, size: 36, color: Color(0xFFE86B35)),
-SizedBox(width: 14),
-Expanded(
-child: Column(
-crossAxisAlignment: CrossAxisAlignment.start,
-children: [
-Text("24x7 Customer Helpdesk", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-Text("We are here to assist with orders, returns, and payments.", style: TextStyle(color: Colors.grey, fontSize: 12)),
+Icon(Icons.headset_mic_outlined, color: Color(0xFFE86B35)),
+SizedBox(width: 8),
+Text("Customer Support & Helpdesk", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
 ],
 ),
-),
-],
-),
-),
-const SizedBox(height: 22),
-Container(
-decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14)),
-child: ListTile(
-leading: const Icon(Icons.email_outlined, color: Color(0xFFE86B35)),
-title: const Text("Email Support", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-subtitle: const Text("support@fashionapp.com"),
-trailing: const Icon(Icons.send_outlined, size: 18, color: Color(0xFFE86B35)),
+const SizedBox(height: 14),
+​// Email Support ✉️
+ListTile(
+leading: const CircleAvatar(backgroundColor: Color(0xFFFFF3ED), child: Icon(Icons.email_outlined, color: Color(0xFFE86B35))),
+title: const Text("Email Support ✉️", style: TextStyle(fontWeight: FontWeight.bold)),
+subtitle: const Text("support@fashionstore.com"),
+trailing: const Icon(Icons.send, size: 18, color: Color(0xFFE86B35)),
 onTap: () {
-ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Opening email app: support@fashionapp.com")));
-},
-),
-),
-const SizedBox(height: 10),
-Container(
-decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14)),
-child: ListTile(
-leading: const Icon(Icons.phone_in_talk_outlined, color: Colors.green),
-title: const Text("Toll-free Helpline", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-subtitle: const Text("+91 93107 58470 / 1800-108-999"),
-trailing: const Icon(Icons.call, size: 18, color: Colors.green),
-onTap: () {
-ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Calling Support Helpline...")));
-},
-),
-),
-const SizedBox(height: 24),
-const Text("Send us a message", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-const SizedBox(height: 10),
-TextField(
-controller: issueCtrl,
-maxLines: 4,
-decoration: InputDecoration(
-hintText: "Describe your issue with order, tracking or payment...",
-filled: true,
-fillColor: Colors.white,
-border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
-),
-),
-const SizedBox(height: 16),
-SizedBox(
-width: double.infinity,
-height: 48,
-child: ElevatedButton(
-onPressed: () {
-if (issueCtrl.text.trim().isNotEmpty) {
 Navigator.pop(context);
-ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Support ticket submitted! Our team will contact you shortly.")));
-}
-},
-style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE86B35)),
-child: const Text("Submit Ticket", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+showDialog(
+context: context,
+builder: (c) => AlertDialog(
+title: const Text("Send Support Email ✉️"),
+content: const Text("Support ticket generated!\n\nEmail will be addressed to: support@fashionstore.com\nResponse time: Within 2 hours."),
+actions: [TextButton(onPressed: () => Navigator.pop(c), child: const Text("OK"))],
 ),
+);
+},
+),
+​// Phone Helpline
+ListTile(
+leading: const CircleAvatar(backgroundColor: Color(0xFFEDF4FE), child: Icon(Icons.phone_in_talk, color: Colors.blueAccent)),
+title: const Text("Helpline Calling", style: TextStyle(fontWeight: FontWeight.bold)),
+subtitle: const Text("+91 9310758470 (Mon-Sat 9AM-8PM)"),
+trailing: const Icon(Icons.call, size: 18, color: Colors.blueAccent),
+onTap: () {
+Navigator.pop(context);
+ScaffoldMessenger.of(context).showSnackBar(
+const SnackBar(content: Text("Calling support helpline +91 9310758470...")),
+);
+},
+),
+​// FAQs
+ListTile(
+leading: const CircleAvatar(backgroundColor: Color(0xFFE8F5E9), child: Icon(Icons.help_center_outlined, color: Colors.green)),
+title: const Text("Order & Return FAQs", style: TextStyle(fontWeight: FontWeight.bold)),
+subtitle: const Text("7-day return policy and refund guidelines"),
+onTap: () {
+Navigator.pop(context);
+ScaffoldMessenger.of(context).showSnackBar(
+const SnackBar(content: Text("Returns: 7 days free replacement on all fashion items.")),
+);
+},
 ),
 ],
-),
-),
 ),
 ),
 );
 }
-​void _openAddresses() {
+​// ADDRESS MANAGEMENT
+void _openAddresses() {
 final nameCtrl = TextEditingController();
 final addrCtrl = TextEditingController();
 final phCtrl = TextEditingController();
@@ -1284,7 +1309,7 @@ context,
 MaterialPageRoute(
 builder: (context) => StatefulBuilder(
 builder: (context, setAddrState) => Scaffold(
-appBar: AppBar(title: const Text("Select delivery address"), centerTitle: true),
+appBar: AppBar(title: const Text("Saved addresses"), centerTitle: true),
 body: Padding(
 padding: const EdgeInsets.all(16),
 child: Column(
@@ -1294,7 +1319,7 @@ decoration: BoxDecoration(color: const Color(0xFFEDF4FE), borderRadius: BorderRa
 child: ListTile(
 leading: const Icon(Icons.my_location, color: Colors.blueAccent),
 title: const Text("Use my current location", style: TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.bold, fontSize: 14)),
-subtitle: const Text("Allow access to auto-fill address", style: TextStyle(fontSize: 11)),
+subtitle: const Text("Auto-detect GPS address", style: TextStyle(fontSize: 11)),
 trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.blueAccent),
 onTap: () {
 setAddrState(() {
@@ -1302,7 +1327,7 @@ globalAddresses.insert(
 0,
 AddressItem(
 name: userProfileName,
-address: "Current GPS Location: Attakulangara, Thiruvananthapuram",
+address: "Current GPS: Main Road, Attakulangara, Thiruvananthapuram",
 phone: userProfilePhone,
 isSelected: true,
 ),
@@ -1311,7 +1336,7 @@ for (int i = 1; i < globalAddresses.length; i++) {
 globalAddresses[i].isSelected = false;
 }
 });
-ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Location detected & set as primary!")));
+ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("GPS Location auto-filled!")));
 },
 ),
 ),
@@ -1358,7 +1383,7 @@ child: const Text("Save", style: TextStyle(color: Colors.white)),
 ),
 ),
 const SizedBox(height: 16),
-const Align(alignment: Alignment.centerLeft, child: Text("Saved addresses", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))),
+const Align(alignment: Alignment.centerLeft, child: Text("Saved Addresses", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))),
 const SizedBox(height: 10),
 Expanded(
 child: ListView.separated(
@@ -1370,30 +1395,10 @@ return Container(
 decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14), border: Border.all(color: addr.isSelected ? const Color(0xFFE86B35) : Colors.transparent, width: 1.5)),
 child: ListTile(
 leading: Icon(Icons.home_work_outlined, color: addr.isSelected ? const Color(0xFFE86B35) : Colors.grey),
-title: Row(
-children: [
-Text(addr.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-const SizedBox(width: 8),
-if (addr.isSelected)
-Container(
-padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-decoration: BoxDecoration(color: Colors.blue.shade50, borderRadius: BorderRadius.circular(4)),
-child: const Text("Selected", style: TextStyle(color: Colors.blueAccent, fontSize: 10, fontWeight: FontWeight.bold)),
-),
-],
-),
-subtitle: Column(
-crossAxisAlignment: CrossAxisAlignment.start,
-children: [
-const SizedBox(height: 4),
-Text(addr.address, style: const TextStyle(fontSize: 12, color: Colors.black87)),
-const SizedBox(height: 4),
-Text("📞 ${addr.phone}", style: const TextStyle(fontSize: 11, color: Colors.grey)),
-],
-),
+title: Text(addr.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+subtitle: Text("${addr.address}\n📞 ${addr.phone}", style: const TextStyle(fontSize: 12)),
 trailing: IconButton(
-icon: const Icon(Icons.check_circle_outline),
-color: addr.isSelected ? const Color(0xFFE86B35) : Colors.grey,
+icon: Icon(addr.isSelected ? Icons.check_circle : Icons.radio_button_unchecked, color: addr.isSelected ? const Color(0xFFE86B35) : Colors.grey),
 onPressed: () {
 setAddrState(() {
 for (var a in globalAddresses) {
@@ -1416,7 +1421,8 @@ addr.isSelected = true;
 ),
 );
 }
-​void openMyOrders() {
+​// MY ORDERS
+void openMyOrders() {
 Navigator.push(
 context,
 MaterialPageRoute(
@@ -1478,17 +1484,24 @@ const Icon(Icons.arrow_forward_ios, size: 10, color: Colors.green),
 ​@override
 Widget build(BuildContext context) {
 return Scaffold(
-appBar: AppBar(title: const Text("Profile"), centerTitle: true, backgroundColor: Colors.transparent, elevation: 0),
+appBar: AppBar(title: const Text("Account Settings"), centerTitle: true, backgroundColor: Colors.transparent, elevation: 0),
 body: SingleChildScrollView(
-padding: const EdgeInsets.all(20),
+padding: const EdgeInsets.all(18),
 child: Column(
+crossAxisAlignment: CrossAxisAlignment.start,
+children: [
+// User Header Card
+Container(
+padding: const EdgeInsets.all(16),
+decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+child: Row(
 children: [
 GestureDetector(
 onTap: _editProfileSheet,
 child: Stack(
 children: [
 CircleAvatar(
-radius: 46,
+radius: 36,
 backgroundColor: const Color(0xFFE86B35),
 backgroundImage: NetworkImage(userProfilePic),
 ),
@@ -1496,62 +1509,84 @@ Positioned(
 bottom: 0,
 right: 0,
 child: Container(
-padding: const EdgeInsets.all(7),
+padding: const EdgeInsets.all(4),
 decoration: const BoxDecoration(color: Color(0xFFE86B35), shape: BoxShape.circle),
-child: const Icon(Icons.camera_alt, color: Colors.white, size: 16),
+child: const Icon(Icons.camera_alt, color: Colors.white, size: 14),
 ),
 ),
 ],
 ),
 ),
-const SizedBox(height: 12),
-Text(userProfileName, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+const SizedBox(width: 14),
+Expanded(
+child: Column(
+crossAxisAlignment: CrossAxisAlignment.start,
+children: [
+Text(userProfileName, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
 Text(userProfileEmail, style: const TextStyle(color: Colors.grey, fontSize: 12)),
-Text("+91 $userProfilePhone • Verified Account", style: const TextStyle(color: Colors.grey, fontSize: 12)),
+Text("+91 $userProfilePhone", style: const TextStyle(color: Colors.grey, fontSize: 12)),
+],
+),
+),
+IconButton(
+icon: const Icon(Icons.edit, color: Color(0xFFE86B35)),
+onPressed: _editProfileSheet,
+)
+],
+),
+),
 const SizedBox(height: 20),
-Container(
-decoration: BoxDecoration(
-gradient: const LinearGradient(colors: [Color(0xFFE86B35), Color(0xFFFF8A50)]),
-borderRadius: BorderRadius.circular(16),
-),
-child: ListTile(
-leading: const Icon(Icons.sell_outlined, color: Colors.white, size: 28),
-title: const Text("Sell Your Items", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-subtitle: const Text("Upload clothes to sell & earn", style: TextStyle(color: Colors.white70, fontSize: 12)),
-trailing: const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 16),
-onTap: () {
-ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Sell item module opened!")));
-},
-),
-),
-const SizedBox(height: 16),
-_buildProfileTile(Icons.shopping_bag_outlined, "My Orders (Live Tracking)", _openMyOrders),
-_buildProfileTile(Icons.location_on_outlined, "Shipping Addresses & GPS", _openAddresses),
-_buildProfileTile(Icons.badge_outlined, "Edit Profile ID & Custom Photo", _editProfileSheet),
-_buildProfileTile(Icons.payment_outlined, "Payment Methods: $selectedPaymentMethod", _openPayments),
-_buildProfileTile(Icons.headset_mic_outlined, "Customer Support (Email / Phone)", _openSupport),
-const SizedBox(height: 12),
+​// Profile Settings Section
+const Text("Profile Settings", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+const SizedBox(height: 8),
+_buildTile(Icons.person_outline, "Edit profile", _editProfileSheet),
+_buildTile(Icons.location_on_outlined, "Saved addresses", _openAddresses),
+_buildTile(Icons.local_shipping_outlined, "My Orders (Live Tracking)", _openMyOrders),
+_buildTile(Icons.translate, "Change language ($currentLanguage)", () {
+setState(() {
+currentLanguage = currentLanguage == "English" ? "Hindi" : "English";
+});
+ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Language changed to $currentLanguage")));
+}),
+_buildTile(Icons.notifications_none, "Notification settings", () {
+setState(() => notificationEnabled = !notificationEnabled);
+ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Notifications ${notificationEnabled ? 'Enabled' : 'Disabled'}")));
+}),
+​const SizedBox(height: 20),
+// Payments & Wallets Section
+const Text("Payments & Wallets", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+const SizedBox(height: 8),
+_buildTile(Icons.payment_outlined, "Payment Methods (CASH / UPI / CARD)", _openPaymentMethods, subtitle: selectedPaymentMethod),
+​const SizedBox(height: 20),
+// Customer Support Section
+const Text("Customer Support & Help", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+const SizedBox(height: 8),
+_buildTile(Icons.mark_email_read_outlined, "Customer Support (Email ✉️ & Helpline)", _openCustomerSupport),
+​const SizedBox(height: 16),
+// Logout
 ListTile(
 tileColor: Colors.white,
-shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
 leading: const Icon(Icons.logout, color: Colors.redAccent),
 title: const Text("Log Out", style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
 onTap: () {
 Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const AuthScreen()));
 },
 ),
+const SizedBox(height: 20),
 ],
 ),
 ),
 );
 }
-​Widget _buildProfileTile(IconData icon, String title, VoidCallback onTap) {
+​Widget _buildTile(IconData icon, String title, VoidCallback onTap, {String? subtitle}) {
 return Container(
-margin: const EdgeInsets.only(bottom: 10),
-decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14)),
+margin: const EdgeInsets.only(bottom: 8),
+decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
 child: ListTile(
 leading: Icon(icon, color: Colors.black87),
-title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+subtitle: subtitle != null ? Text(subtitle, style: const TextStyle(fontSize: 11, color: Color(0xFFE86B35))) : null,
 trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
 onTap: onTap,
 ),
