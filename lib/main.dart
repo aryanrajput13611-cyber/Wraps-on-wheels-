@@ -98,10 +98,23 @@ List<String> globalAddresses = [
   "Main Market, Pihra, Giridih, Jharkhand - 815318",
 ];
 
-// Profile data
-String userProfileName = "Fashion Member";
-String userProfilePhone = "+91 9876543210";
-String userProfilePic = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&q=80";
+// User Profile Variables
+String userProfileName = "sunan kumar";
+String userProfilePhone = "9310758470";
+String userProfilePic = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&q=80";
+String selectedPaymentMethod = "UPI / Google Pay / PhonePe";
+bool notificationEnabled = true;
+String selectedLanguage = "Hindi";
+
+// Ready-to-use Profile Photos
+final List<String> availableAvatars = [
+  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&q=80",
+  "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=300&q=80",
+  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&q=80",
+  "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=300&q=80",
+  "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&q=80",
+  "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=300&q=80",
+];
 
 // ================= AUTH SCREEN =================
 class AuthScreen extends StatefulWidget {
@@ -153,7 +166,7 @@ class _AuthScreenState extends State<AuthScreen> {
           children: [
             const Text("Reset Password", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
-            const Text("Enter your registered email or phone to receive instructions.", style: TextStyle(color: Colors.grey, fontSize: 13)),
+            const Text("Enter your registered email or phone number.", style: TextStyle(color: Colors.grey, fontSize: 13)),
             const SizedBox(height: 16),
             TextField(
               controller: resetCtrl,
@@ -171,15 +184,13 @@ class _AuthScreenState extends State<AuthScreen> {
               child: ElevatedButton(
                 onPressed: () {
                   Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Reset instructions sent!")),
-                  );
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Reset OTP sent to your number!")));
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFE86B35),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
-                child: const Text("Send Reset Instructions", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                child: const Text("Send Reset Code", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
               ),
             )
           ],
@@ -884,7 +895,7 @@ class _CartScreenState extends State<CartScreen> {
   }
 }
 
-// ================= PROFILE & ALL FUNCTIONAL TILES =================
+// ================= PROFILE SCREEN =================
 class ProfileScreen extends StatefulWidget {
   final VoidCallback onRefresh;
   const ProfileScreen({super.key, required this.onRefresh});
@@ -894,40 +905,92 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  // Avatar selection modal
   void _editProfilePhoto() {
-    final urlCtrl = TextEditingController(text: userProfilePic);
     final nameCtrl = TextEditingController(text: userProfileName);
     final phoneCtrl = TextEditingController(text: userProfilePhone);
 
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text("Edit Profile & Photo"),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(controller: nameCtrl, decoration: const InputDecoration(labelText: "Full Name")),
-            TextField(controller: phoneCtrl, decoration: const InputDecoration(labelText: "Phone Number")),
-            TextField(controller: urlCtrl, decoration: const InputDecoration(labelText: "Profile Image URL (Direct Link)")),
-          ],
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
-          ElevatedButton(
-            onPressed: () {
-              setState(() {
-                userProfileName = nameCtrl.text;
-                userProfilePhone = phoneCtrl.text;
-                userProfilePic = urlCtrl.text;
-              });
-              Navigator.pop(context);
-              widget.onRefresh();
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE86B35)),
-            child: const Text("Save", style: TextStyle(color: Colors.white)),
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setSheetState) => Padding(
+          padding: EdgeInsets.only(
+            left: 20,
+            right: 20,
+            top: 20,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 20,
           ),
-        ],
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text("Choose Profile Photo", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 12),
+                SizedBox(
+                  height: 80,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: availableAvatars.length,
+                    separatorBuilder: (_, __) => const SizedBox(width: 12),
+                    itemBuilder: (context, idx) {
+                      final pic = availableAvatars[idx];
+                      final isSelected = userProfilePic == pic;
+                      return GestureDetector(
+                        onTap: () {
+                          setSheetState(() => userProfilePic = pic);
+                          setState(() {});
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(color: isSelected ? const Color(0xFFE86B35) : Colors.transparent, width: 3),
+                          ),
+                          child: CircleAvatar(
+                            radius: 34,
+                            backgroundImage: NetworkImage(pic),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 18),
+                TextField(
+                  controller: nameCtrl,
+                  decoration: const InputDecoration(labelText: "Full Name", border: OutlineInputBorder()),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: phoneCtrl,
+                  keyboardType: TextInputType.phone,
+                  decoration: const InputDecoration(labelText: "Phone Number", border: OutlineInputBorder()),
+                ),
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        userProfileName = nameCtrl.text.isNotEmpty ? nameCtrl.text : userProfileName;
+                        userProfilePhone = phoneCtrl.text.isNotEmpty ? phoneCtrl.text : userProfilePhone;
+                      });
+                      widget.onRefresh();
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Profile details updated!")));
+                    },
+                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE86B35)),
+                    child: const Text("Save Changes", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -935,7 +998,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void _showSellDialog() {
     final nameCtrl = TextEditingController();
     final priceCtrl = TextEditingController();
-    final imgCtrl = TextEditingController();
     final descCtrl = TextEditingController();
     String category = "Tops";
 
@@ -964,8 +1026,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const SizedBox(height: 12),
                 TextField(controller: priceCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: "Price (\$)", border: OutlineInputBorder())),
                 const SizedBox(height: 12),
-                TextField(controller: imgCtrl, decoration: const InputDecoration(labelText: "Image URL", border: OutlineInputBorder())),
-                const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
                   value: category,
                   decoration: const InputDecoration(labelText: "Category", border: OutlineInputBorder()),
@@ -988,13 +1048,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             name: nameCtrl.text,
                             category: category,
                             price: double.tryParse(priceCtrl.text) ?? 50.0,
-                            image: imgCtrl.text.isNotEmpty ? imgCtrl.text : "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=500&q=80",
-                            description: descCtrl.text.isNotEmpty ? descCtrl.text : "Fashion item.",
+                            image: "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=500&q=80",
+                            description: descCtrl.text.isNotEmpty ? descCtrl.text : "Trendy fashion item.",
                           ),
                         );
                         Navigator.pop(context);
                         widget.onRefresh();
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Item Listed For Sale!")));
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Item listed for sale!")));
                       }
                     },
                     style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE86B35)),
@@ -1093,7 +1153,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         context: context,
                         builder: (context) => AlertDialog(
                           title: const Text("Add New Address"),
-                          content: TextField(controller: addrCtrl, maxLines: 3, decoration: const InputDecoration(hintText: "Enter full address with pincode")),
+                          content: TextField(controller: addrCtrl, maxLines: 3, decoration: const InputDecoration(hintText: "Enter full delivery address")),
                           actions: [
                             TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
                             ElevatedButton(
@@ -1131,18 +1191,56 @@ class _ProfileScreenState extends State<ProfileScreen> {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (context) => Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text("Payment Methods", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 14),
-            ListTile(leading: const Icon(Icons.account_balance_wallet, color: Colors.blue), title: const Text("UPI / Google Pay / PhonePe"), subtitle: const Text("Active")),
-            ListTile(leading: const Icon(Icons.credit_card, color: Colors.purple), title: const Text("Debit / Credit Card"), subtitle: const Text("Add card")),
-            ListTile(leading: const Icon(Icons.money, color: Colors.green), title: const Text("Cash on Delivery (COD)"), subtitle: const Text("Enabled")),
-          ],
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) => Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text("Payment Methods", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 14),
+              RadioListTile<String>(
+                value: "UPI / Google Pay / PhonePe",
+                groupValue: selectedPaymentMethod,
+                title: const Text("UPI / Google Pay / PhonePe"),
+                subtitle: const Text("Instant UPI Transfer"),
+                secondary: const Icon(Icons.account_balance_wallet, color: Colors.blue),
+                onChanged: (val) {
+                  setModalState(() => selectedPaymentMethod = val!);
+                  setState(() {});
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Selected: $val")));
+                },
+              ),
+              RadioListTile<String>(
+                value: "Debit / Credit Card",
+                groupValue: selectedPaymentMethod,
+                title: const Text("Debit / Credit Card"),
+                subtitle: const Text("Visa, MasterCard, RuPay"),
+                secondary: const Icon(Icons.credit_card, color: Colors.purple),
+                onChanged: (val) {
+                  setModalState(() => selectedPaymentMethod = val!);
+                  setState(() {});
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Selected: $val")));
+                },
+              ),
+              RadioListTile<String>(
+                value: "Cash on Delivery (COD)",
+                groupValue: selectedPaymentMethod,
+                title: const Text("Cash on Delivery (COD)"),
+                subtitle: const Text("Pay when item arrives"),
+                secondary: const Icon(Icons.money, color: Colors.green),
+                onChanged: (val) {
+                  setModalState(() => selectedPaymentMethod = val!);
+                  setState(() {});
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Selected: $val")));
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -1152,17 +1250,54 @@ class _ProfileScreenState extends State<ProfileScreen> {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (context) => Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text("Settings", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 12),
-            ListTile(leading: const Icon(Icons.notifications_active_outlined), title: const Text("App Notifications"), trailing: Switch(value: true, onChanged: (v) {})),
-            ListTile(leading: const Icon(Icons.language_outlined), title: const Text("Language"), trailing: const Text("English / Hindi")),
-            ListTile(leading: const Icon(Icons.help_outline), title: const Text("Customer Support"), onTap: () {}),
-          ],
+      builder: (context) => StatefulBuilder(
+        builder: (context, setSheetState) => Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text("Settings", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 12),
+              ListTile(
+                leading: const Icon(Icons.notifications_active_outlined),
+                title: const Text("App Notifications"),
+                trailing: Switch(
+                  value: notificationEnabled,
+                  activeColor: const Color(0xFFE86B35),
+                  onChanged: (v) {
+                    setSheetState(() => notificationEnabled = v);
+                    setState(() {});
+                  },
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.language_outlined),
+                title: const Text("Language"),
+                trailing: Text(selectedLanguage, style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFE86B35))),
+                onTap: () {
+                  setSheetState(() {
+                    selectedLanguage = selectedLanguage == "Hindi" ? "English" : "Hindi";
+                  });
+                  setState(() {});
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.help_outline),
+                title: const Text("Customer Support"),
+                onTap: () {
+                  Navigator.pop(context);
+                  showDialog(
+                    context: context,
+                    builder: (c) => AlertDialog(
+                      title: const Text("Customer Support"),
+                      content: const Text("Need help? Contact us anytime:\n\nEmail: support@fashionapp.com\nHelpline: +91 98765 43210"),
+                      actions: [TextButton(onPressed: () => Navigator.pop(c), child: const Text("OK"))],
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -1176,31 +1311,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            // Profile Pic with Camera Edit Icon
-            Stack(
-              children: [
-                CircleAvatar(
-                  radius: 44,
-                  backgroundColor: const Color(0xFFE86B35),
-                  backgroundImage: NetworkImage(userProfilePic),
-                ),
-                Positioned(
-                  bottom: 0,
-                  right: 0,
-                  child: GestureDetector(
-                    onTap: _editProfilePhoto,
+            // Profile Pic with Instant Avatar Chooser
+            GestureDetector(
+              onTap: _editProfilePhoto,
+              child: Stack(
+                children: [
+                  CircleAvatar(
+                    radius: 46,
+                    backgroundColor: const Color(0xFFE86B35),
+                    backgroundImage: NetworkImage(userProfilePic),
+                  ),
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
                     child: Container(
-                      padding: const EdgeInsets.all(6),
+                      padding: const EdgeInsets.all(7),
                       decoration: const BoxDecoration(color: Color(0xFFE86B35), shape: BoxShape.circle),
                       child: const Icon(Icons.camera_alt, color: Colors.white, size: 16),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
             const SizedBox(height: 12),
             Text(userProfileName, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            Text("$userProfilePhone • Verified Account", style: const TextStyle(color: Colors.grey, fontSize: 12)),
+            Text("+91 $userProfilePhone • Verified Account", style: const TextStyle(color: Colors.grey, fontSize: 12)),
             const SizedBox(height: 24),
 
             // Sell Button
@@ -1219,7 +1354,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             const SizedBox(height: 16),
 
-            // Clickable Functional Profile Options
+            // Clickable Profile Tiles
             _buildProfileTile(Icons.shopping_bag_outlined, "My Orders", _openMyOrders),
             _buildProfileTile(Icons.location_on_outlined, "Shipping Addresses", _openAddresses),
             _buildProfileTile(Icons.payment_outlined, "Payment Methods", _openPayments),
