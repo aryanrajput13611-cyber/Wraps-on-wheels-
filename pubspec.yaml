@@ -1,5 +1,5 @@
-name: wraps_on_wheels
-description: Wraps on Wheels restaurant order app
+name: fashion_app
+description: Fashion Shopping App
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -10,10 +10,6 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.8
-  firebase_core: ^3.6.0
-  cloud_firestore: ^5.4.4
-  audioplayers: ^6.0.0
-  firebase_auth: ^5.3.1
 
 dev_dependencies:
   flutter_test:
