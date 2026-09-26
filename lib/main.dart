@@ -19,7 +19,7 @@ home: const AuthScreen(),
 );
 }
 }
-​// ================= GLOBAL STATE & MODELS =================
+​// Global Models
 class Product {
 final String id;
 final String name;
@@ -48,7 +48,7 @@ final String title;
 final double price;
 final String date;
 final String status;
-final int currentStep; // 1: Placed, 2: Shipped, 3: Out for Delivery, 4: Delivered
+final int currentStep;
 ​OrderItem({
 required this.orderId,
 required this.title,
@@ -124,8 +124,7 @@ phone: "9310758470",
 isSelected: false,
 ),
 ];
-​// Profile global variables
-String userProfileName = "Sunan Kumar";
+​String userProfileName = "Sunan Kumar";
 String userProfilePhone = "9310758470";
 String userProfileEmail = "sunankumar77@gmail.com";
 String userProfilePic = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&q=80";
@@ -138,7 +137,7 @@ String selectedPaymentMethod = "UPI (Google Pay / PhonePe / Paytm)";
 "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&q=80",
 "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=300&q=80",
 ];
-​// ================= AUTH SCREEN =================
+​// Authentication Screen
 class AuthScreen extends StatefulWidget {
 const AuthScreen({super.key});
 ​@override
@@ -208,7 +207,7 @@ crossAxisAlignment: CrossAxisAlignment.start,
 children: [
 const Text("Forgot Password", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
 const SizedBox(height: 8),
-const Text("Enter your registered email or phone number to receive a 6-digit OTP reset code.", style: TextStyle(color: Colors.grey, fontSize: 13)),
+const Text("Enter your registered email or phone number to receive a reset OTP.", style: TextStyle(color: Colors.grey, fontSize: 13)),
 const SizedBox(height: 16),
 TextField(
 controller: resetCtrl,
@@ -283,7 +282,6 @@ isLogin ? "Welcome back! Login to explore trends" : "Create account to buy & tra
 style: const TextStyle(color: Colors.grey, fontSize: 13),
 ),
 const SizedBox(height: 24),
-​// Toggle Login / Sign Up
 Container(
 padding: const EdgeInsets.all(4),
 decoration: BoxDecoration(color: Colors.grey.shade200, borderRadius: BorderRadius.circular(14)),
@@ -313,7 +311,6 @@ child: Center(child: Text("Sign Up", style: TextStyle(fontWeight: FontWeight.bol
 ),
 ),
 const SizedBox(height: 14),
-​// Switch Email vs Phone
 Align(
 alignment: Alignment.centerRight,
 child: TextButton.icon(
@@ -330,7 +327,7 @@ style: const TextStyle(color: Color(0xFFE86B35), fontWeight: FontWeight.bold, fo
 ),
 ),
 ),
-​if (!isLogin) ...[
+if (!isLogin) ...[
 TextField(
 controller: nameCtrl,
 decoration: InputDecoration(
@@ -343,11 +340,11 @@ border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: 
 ),
 const SizedBox(height: 14),
 ],
-​TextField(
+TextField(
 controller: inputCtrl,
 keyboardType: isPhoneMode ? TextInputType.phone : TextInputType.emailAddress,
 decoration: InputDecoration(
-hintText: isPhoneMode ? "Phone Number (e.g. 9310758470)" : "Email ID (e.g. name@gmail.com)",
+hintText: isPhoneMode ? "Phone Number" : "Email ID",
 prefixIcon: Icon(isPhoneMode ? Icons.phone_outlined : Icons.alternate_email),
 filled: true,
 fillColor: Colors.white,
@@ -355,7 +352,7 @@ border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: 
 ),
 ),
 const SizedBox(height: 14),
-​TextField(
+TextField(
 controller: passwordCtrl,
 obscureText: !isPasswordVisible,
 decoration: InputDecoration(
@@ -370,7 +367,7 @@ fillColor: Colors.white,
 border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
 ),
 ),
-​if (isLogin) ...[
+if (isLogin) ...[
 Align(
 alignment: Alignment.centerRight,
 child: TextButton(
@@ -381,7 +378,7 @@ child: const Text("Forgot Password?", style: TextStyle(color: Colors.grey, fontS
 ] else ...[
 const SizedBox(height: 16),
 ],
-​SizedBox(
+SizedBox(
 width: double.infinity,
 height: 50,
 child: ElevatedButton(
@@ -401,7 +398,7 @@ child: Text(isLogin ? "Log In" : "Create Account", style: const TextStyle(color:
 );
 }
 }
-​// ================= MAIN NAVIGATION =================
+​// Main Navigation
 class MainNavigationScreen extends StatefulWidget {
 const MainNavigationScreen({super.key});
 ​@override
@@ -444,7 +441,7 @@ BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Profile'),
 );
 }
 }
-​// ================= HOME SCREEN =================
+​// Home Screen
 class HomeScreen extends StatefulWidget {
 final VoidCallback onRefresh;
 const HomeScreen({super.key, required this.onRefresh});
@@ -488,7 +485,7 @@ Column(
 crossAxisAlignment: CrossAxisAlignment.start,
 children: [
 const Text("FASHION", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18, letterSpacing: 1)),
-Text("Deliver to: ${globalAddresses.firstWhere((e) => e.isSelected, orElse: () => globalAddresses.first).name}", style: const TextStyle(color: Colors.grey, fontSize: 11)),
+Text("Deliver to: {globalAddresses.firstWhere((e) => e.isSelected, orElse: () => globalAddresses.first).name}", style: const TextStyle(color: Colors.grey, fontSize: 11)),
 ],
 ),
 ],
@@ -497,7 +494,7 @@ IconButton(onPressed: () {}, icon: const Icon(Icons.notifications_none_outlined)
 ],
 ),
 const SizedBox(height: 16),
-​Container(
+Container(
 padding: const EdgeInsets.symmetric(horizontal: 16),
 decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 8)]),
 child: const TextField(
@@ -510,7 +507,6 @@ hintStyle: TextStyle(color: Colors.grey, fontSize: 13),
 ),
 ),
 const SizedBox(height: 16),
-​// Category Icons Row
 SizedBox(
 height: 90,
 child: ListView.separated(
@@ -538,7 +534,7 @@ Text(cat["name"]!, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w
 ),
 ),
 const SizedBox(height: 14),
-​const Text("Shopping for others?", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+const Text("Shopping for others?", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
 const SizedBox(height: 10),
 Row(
 children: [
@@ -550,7 +546,7 @@ _buildBannerCard("Kids", Colors.amber.shade50),
 ],
 ),
 const SizedBox(height: 20),
-​SizedBox(
+SizedBox(
 height: 36,
 child: ListView.separated(
 scrollDirection: Axis.horizontal,
@@ -575,7 +571,7 @@ child: Text(categories[index], style: TextStyle(color: isSelected ? Colors.white
 ),
 ),
 const SizedBox(height: 20),
-​const Text("Popular Clothes & Shoes", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+const Text("Popular Clothes & Shoes", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
 const SizedBox(height: 12),
 GridView.builder(
 shrinkWrap: true,
@@ -604,7 +600,7 @@ ClipRRect(borderRadius: BorderRadius.circular(12), child: Image.network(prod.ima
 const SizedBox(height: 8),
 Text(prod.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
 const SizedBox(height: 4),
-Text("$${prod.price.toStringAsFixed(2)}", style: const TextStyle(color: Color(0xFFE86B35), fontWeight: FontWeight.bold, fontSize: 14)),
+Text("\${prod.price.toStringAsFixed(2)}", style: const TextStyle(color: Color(0xFFE86B35), fontWeight: FontWeight.bold, fontSize: 14)),
 ],
 ),
 ),
@@ -626,7 +622,7 @@ child: Center(child: Text(label, style: const TextStyle(fontWeight: FontWeight.b
 );
 }
 }
-​// ================= SAVED SCREEN =================
+​// Wishlist Screen
 class SavedScreen extends StatefulWidget {
 const SavedScreen({super.key});
 ​@override
@@ -661,7 +657,7 @@ onPressed: () => setState(() => globalFavorites.removeAt(index)),
 );
 }
 }
-​// ================= DETAILS SCREEN =================
+​// Product Detail Screen
 class ProductDetailScreen extends StatefulWidget {
 final Product product;
 const ProductDetailScreen({super.key, required this.product});
@@ -778,7 +774,7 @@ child: const Text("Buy Now", style: TextStyle(color: Colors.white, fontWeight: F
 );
 }
 }
-​// ================= LIVE ORDER TRACKING SCREEN =================
+​// Live Order Tracking Screen
 class OrderTrackingScreen extends StatelessWidget {
 final OrderItem order;
 const OrderTrackingScreen({super.key, required this.order});
@@ -821,13 +817,13 @@ Text("Payment: $selectedPaymentMethod", style: TextStyle(color: Colors.grey.shad
 ),
 ),
 const SizedBox(height: 24),
-​const Text("Delivery Steps", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+const Text("Delivery Steps", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
 const SizedBox(height: 16),
-​_buildTrackingStep("Order Confirmed", "Item received by store", true),
+_buildTrackingStep("Order Confirmed", "Item received by store", true),
 _buildTrackingStep("Shipped from Warehouse", "Courier picked up your package", order.currentStep >= 2),
 _buildTrackingStep("Out for Delivery", "Delivery executive is arriving near your address", order.currentStep >= 3),
 _buildTrackingStep("Delivered", "Delivered at your doorstep", order.currentStep >= 4, isLast: true),
-​const SizedBox(height: 24),
+const SizedBox(height: 24),
 Container(
 padding: const EdgeInsets.all(16),
 decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
@@ -895,7 +891,7 @@ const SizedBox(height: 14),
 );
 }
 }
-​// ================= CART SCREEN =================
+​// Cart Screen
 class CartScreen extends StatefulWidget {
 final VoidCallback onRefresh;
 const CartScreen({super.key, required this.onRefresh});
@@ -1001,7 +997,7 @@ child: const Text("Checkout & Place Order", style: TextStyle(color: Colors.white
 );
 }
 }
-​// ================= PROFILE SCREEN (WITH DIRECT PHOTO URL & PAYMENTS) =================
+​// Profile Screen
 class ProfileScreen extends StatefulWidget {
 final VoidCallback onRefresh;
 const ProfileScreen({super.key, required this.onRefresh});
@@ -1009,7 +1005,6 @@ const ProfileScreen({super.key, required this.onRefresh});
 State<ProfileScreen> createState() => _ProfileScreenState();
 }
 ​class _ProfileScreenState extends State<ProfileScreen> {
-// Modal to edit name, phone, email & custom user photo
 void _editProfileSheet() {
 final nameCtrl = TextEditingController(text: userProfileName);
 final phoneCtrl = TextEditingController(text: userProfilePhone);
@@ -1098,8 +1093,7 @@ child: const Text("Save Changes", style: TextStyle(color: Colors.white, fontWeig
 ),
 );
 }
-​// INTERACTIVE PAYMENT METHOD (CASH, UPI, CARD)
-void _openPayments() {
+​void _openPayments() {
 showModalBottomSheet(
 context: context,
 shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
@@ -1114,7 +1108,6 @@ const Text("Select Payment Method", style: TextStyle(fontSize: 18, fontWeight: F
 const SizedBox(height: 6),
 const Text("Choose your preferred mode for faster checkout:", style: TextStyle(color: Colors.grey, fontSize: 12)),
 const SizedBox(height: 16),
-​// 1. CASH / COD
 Container(
 margin: const EdgeInsets.only(bottom: 10),
 decoration: BoxDecoration(
@@ -1137,7 +1130,6 @@ ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Selected: $va
 },
 ),
 ),
-​// 2. UPI
 Container(
 margin: const EdgeInsets.only(bottom: 10),
 decoration: BoxDecoration(
@@ -1160,7 +1152,6 @@ ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Selected: $va
 },
 ),
 ),
-​// 3. CARD
 Container(
 decoration: BoxDecoration(
 color: selectedPaymentMethod.contains("Card") ? const Color(0xFFFFF3ED) : Colors.white,
@@ -1188,8 +1179,7 @@ ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Selected: $va
 ),
 );
 }
-​// CUSTOMER SUPPORT SCREEN
-void _openSupport() {
+​void _openSupport() {
 final issueCtrl = TextEditingController();
 Navigator.push(
 context,
@@ -1225,7 +1215,6 @@ Text("We are here to assist with orders, returns, and payments.", style: TextSty
 ),
 ),
 const SizedBox(height: 22),
-​// Direct email support
 Container(
 decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14)),
 child: ListTile(
@@ -1239,7 +1228,6 @@ ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Opening
 ),
 ),
 const SizedBox(height: 10),
-​// Helpline
 Container(
 decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14)),
 child: ListTile(
@@ -1253,7 +1241,7 @@ ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Calling
 ),
 ),
 const SizedBox(height: 24),
-​const Text("Send us a message", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+const Text("Send us a message", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
 const SizedBox(height: 10),
 TextField(
 controller: issueCtrl,
@@ -1521,7 +1509,6 @@ Text(userProfileName, style: const TextStyle(fontSize: 18, fontWeight: FontWeigh
 Text(userProfileEmail, style: const TextStyle(color: Colors.grey, fontSize: 12)),
 Text("+91 $userProfilePhone • Verified Account", style: const TextStyle(color: Colors.grey, fontSize: 12)),
 const SizedBox(height: 20),
-​// Sell Your Items
 Container(
 decoration: BoxDecoration(
 gradient: const LinearGradient(colors: [Color(0xFFE86B35), Color(0xFFFF8A50)]),
@@ -1538,14 +1525,12 @@ ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Sell it
 ),
 ),
 const SizedBox(height: 16),
-​// Profile Options
 _buildProfileTile(Icons.shopping_bag_outlined, "My Orders (Live Tracking)", _openMyOrders),
 _buildProfileTile(Icons.location_on_outlined, "Shipping Addresses & GPS", _openAddresses),
 _buildProfileTile(Icons.badge_outlined, "Edit Profile ID & Custom Photo", _editProfileSheet),
 _buildProfileTile(Icons.payment_outlined, "Payment Methods: $selectedPaymentMethod", _openPayments),
 _buildProfileTile(Icons.headset_mic_outlined, "Customer Support (Email / Phone)", _openSupport),
 const SizedBox(height: 12),
-​// Logout
 ListTile(
 tileColor: Colors.white,
 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
