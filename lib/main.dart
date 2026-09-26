@@ -23,7 +23,7 @@ class FashionApp extends StatelessWidget {
   }
 }
 
-// ================= GLOBAL STATE =================
+// ================= MODELS & DATA =================
 class Product {
   final String id;
   final String name;
@@ -56,8 +56,30 @@ class OrderItem {
   final double price;
   final String date;
   final String status;
+  final int currentStep; // 1: Placed, 2: Shipped, 3: Out for Delivery, 4: Delivered
 
-  OrderItem({required this.orderId, required this.title, required this.price, required this.date, required this.status});
+  OrderItem({
+    required this.orderId,
+    required this.title,
+    required this.price,
+    required this.date,
+    required this.status,
+    required this.currentStep,
+  });
+}
+
+class AddressItem {
+  final String name;
+  final String address;
+  final String phone;
+  bool isSelected;
+
+  AddressItem({
+    required this.name,
+    required this.address,
+    required this.phone,
+    this.isSelected = false,
+  });
 }
 
 List<Product> globalProducts = [
@@ -91,22 +113,39 @@ List<Product> globalFavorites = [globalProducts[0]];
 List<CartItem> globalCart = [
   CartItem(product: globalProducts[2], size: "M", quantity: 1),
 ];
+
 List<OrderItem> globalOrders = [
-  OrderItem(orderId: "ORD#9482", title: "Men's Pullover Hoodie", price: 130.00, date: "26 Sep 2026", status: "Delivered"),
-];
-List<String> globalAddresses = [
-  "Main Market, Pihra, Giridih, Jharkhand - 815318",
+  OrderItem(
+    orderId: "ORD#9482",
+    title: "Men's Pullover Hoodie",
+    price: 130.00,
+    date: "26 Sep 2026",
+    status: "Out for Delivery",
+    currentStep: 3,
+  ),
 ];
 
-// User Profile Variables
-String userProfileName = "sunan kumar";
+List<AddressItem> globalAddresses = [
+  AddressItem(
+    name: "Sunan Kumar",
+    address: "Wraps on wheels, Attakulangara, Main Road, FPSRA87, Thiruvananthapuram",
+    phone: "9310758470",
+    isSelected: true,
+  ),
+  AddressItem(
+    name: "Sunny",
+    address: "Wraps on wheels, Attakulangara, Koderma / Giridih Road",
+    phone: "9310758470",
+    isSelected: false,
+  ),
+];
+
+// Profile details
+String userProfileName = "Sunan Kumar";
 String userProfilePhone = "9310758470";
+String userProfileEmail = "sunankumar77@gmail.com";
 String userProfilePic = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&q=80";
-String selectedPaymentMethod = "UPI / Google Pay / PhonePe";
-bool notificationEnabled = true;
-String selectedLanguage = "Hindi";
 
-// Ready-to-use Profile Photos
 final List<String> availableAvatars = [
   "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&q=80",
   "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=300&q=80",
@@ -134,68 +173,19 @@ class _AuthScreenState extends State<AuthScreen> {
   final TextEditingController nameCtrl = TextEditingController();
 
   void _submit() {
-    if (emailOrPhoneCtrl.text.isNotEmpty && !isLogin && nameCtrl.text.isNotEmpty) {
+    if (nameCtrl.text.isNotEmpty && !isLogin) {
       userProfileName = nameCtrl.text;
-      if (isPhoneAuth) {
+    }
+    if (emailOrPhoneCtrl.text.isNotEmpty) {
+      if (emailOrPhoneCtrl.text.contains('@')) {
+        userProfileEmail = emailOrPhoneCtrl.text;
+      } else {
         userProfilePhone = emailOrPhoneCtrl.text;
       }
     }
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => const MainNavigationScreen()),
-    );
-  }
-
-  void _showForgotPasswordSheet() {
-    final TextEditingController resetCtrl = TextEditingController();
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
-      builder: (context) => Padding(
-        padding: EdgeInsets.only(
-          left: 24,
-          right: 24,
-          top: 24,
-          bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text("Reset Password", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            const Text("Enter your registered email or phone number.", style: TextStyle(color: Colors.grey, fontSize: 13)),
-            const SizedBox(height: 16),
-            TextField(
-              controller: resetCtrl,
-              decoration: InputDecoration(
-                hintText: "Email or Phone Number",
-                filled: true,
-                fillColor: const Color(0xFFFBF8F5),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-              ),
-            ),
-            const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              height: 48,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Reset OTP sent to your number!")));
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFE86B35),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                child: const Text("Send Reset Code", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-              ),
-            )
-          ],
-        ),
-      ),
     );
   }
 
@@ -208,7 +198,6 @@ class _AuthScreenState extends State<AuthScreen> {
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 26.0),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Container(
                   width: 65,
@@ -223,14 +212,12 @@ class _AuthScreenState extends State<AuthScreen> {
                   child: const Icon(Icons.shopping_bag_outlined, color: Colors.white, size: 36),
                 ),
                 const SizedBox(height: 16),
-                const Text("FASHION", style: TextStyle(fontSize: 26, fontWeight: FontWeight.w900, letterSpacing: 2, color: Colors.black87)),
+                const Text("FASHION", style: TextStyle(fontSize: 26, fontWeight: FontWeight.w900, letterSpacing: 2)),
                 Text(
-                  isLogin ? "Welcome back! Login to explore trends" : "Create an account to start shopping & selling",
-                  textAlign: TextAlign.center,
+                  isLogin ? "Welcome back! Login to explore trends" : "Create account to buy & track orders",
                   style: const TextStyle(color: Colors.grey, fontSize: 13),
                 ),
                 const SizedBox(height: 24),
-
                 Container(
                   padding: const EdgeInsets.all(4),
                   decoration: BoxDecoration(color: Colors.grey.shade200, borderRadius: BorderRadius.circular(14)),
@@ -260,18 +247,6 @@ class _AuthScreenState extends State<AuthScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    TextButton.icon(
-                      onPressed: () => setState(() => isPhoneAuth = !isPhoneAuth),
-                      icon: Icon(isPhoneAuth ? Icons.email_outlined : Icons.phone_android, size: 16, color: const Color(0xFFE86B35)),
-                      label: Text(isPhoneAuth ? "Use Email ID" : "Use Phone Number", style: const TextStyle(color: Color(0xFFE86B35), fontSize: 12, fontWeight: FontWeight.bold)),
-                    ),
-                  ],
-                ),
-
                 if (!isLogin) ...[
                   TextField(
                     controller: nameCtrl,
@@ -285,20 +260,17 @@ class _AuthScreenState extends State<AuthScreen> {
                   ),
                   const SizedBox(height: 14),
                 ],
-
                 TextField(
                   controller: emailOrPhoneCtrl,
-                  keyboardType: isPhoneAuth ? TextInputType.phone : TextInputType.emailAddress,
                   decoration: InputDecoration(
-                    hintText: isPhoneAuth ? "Phone Number" : "Email ID",
-                    prefixIcon: Icon(isPhoneAuth ? Icons.phone_outlined : Icons.alternate_email),
+                    hintText: "Email or Phone Number",
+                    prefixIcon: const Icon(Icons.alternate_email),
                     filled: true,
                     fillColor: Colors.white,
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                   ),
                 ),
                 const SizedBox(height: 14),
-
                 TextField(
                   controller: passwordCtrl,
                   obscureText: !isPasswordVisible,
@@ -314,19 +286,7 @@ class _AuthScreenState extends State<AuthScreen> {
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                   ),
                 ),
-
-                if (isLogin) ...[
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
-                      onPressed: _showForgotPasswordSheet,
-                      child: const Text("Forgot Password?", style: TextStyle(color: Colors.grey, fontSize: 12)),
-                    ),
-                  ),
-                ] else ...[
-                  const SizedBox(height: 16),
-                ],
-
+                const SizedBox(height: 24),
                 SizedBox(
                   width: double.infinity,
                   height: 50,
@@ -348,7 +308,7 @@ class _AuthScreenState extends State<AuthScreen> {
   }
 }
 
-// ================= MAIN NAVIGATION =================
+// ================= MAIN NAVIGATION SCREEN =================
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
 
@@ -409,6 +369,14 @@ class _HomeScreenState extends State<HomeScreen> {
   int selectedCategoryIndex = 0;
   final List<String> categories = ["All", "Tops", "Footwear", "Bottoms"];
 
+  final List<Map<String, String>> categoryIcons = [
+    {"name": "Kurta pajama", "img": "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=200&q=80"},
+    {"name": "Sunglasses", "img": "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=200&q=80"},
+    {"name": "Kids shoes", "img": "https://images.unsplash.com/photo-1514989940723-e8e51635b782?w=200&q=80"},
+    {"name": "Formal shoes", "img": "https://images.unsplash.com/photo-1533867617858-e7b97e060509?w=200&q=80"},
+    {"name": "Sandals", "img": "https://images.unsplash.com/photo-1603808033192-082d6919d3e1?w=200&q=80"},
+  ];
+
   @override
   Widget build(BuildContext context) {
     final filtered = selectedCategoryIndex == 0
@@ -421,6 +389,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Top Bar
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -437,7 +406,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text("FASHION", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18, letterSpacing: 1)),
-                        Text("Hey, $userProfileName", style: const TextStyle(color: Colors.grey, fontSize: 11)),
+                        Text("Deliver to: ${globalAddresses.firstWhere((e) => e.isSelected, orElse: () => globalAddresses.first).name}", style: const TextStyle(color: Colors.grey, fontSize: 11)),
                       ],
                     ),
                   ],
@@ -445,8 +414,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 IconButton(onPressed: () {}, icon: const Icon(Icons.notifications_none_outlined)),
               ],
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: 16),
 
+            // Search Bar
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 8)]),
@@ -454,15 +424,59 @@ class _HomeScreenState extends State<HomeScreen> {
                 decoration: InputDecoration(
                   icon: Icon(Icons.search, color: Colors.grey),
                   border: InputBorder.none,
-                  hintText: "Search products...",
+                  hintText: "Search shoes, hoodies, sunglasses...",
                   hintStyle: TextStyle(color: Colors.grey, fontSize: 13),
                 ),
               ),
             ),
             const SizedBox(height: 16),
 
+            // Top Small Horizontal Categories (Flipkart style)
             SizedBox(
-              height: 38,
+              height: 90,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: categoryIcons.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 14),
+                itemBuilder: (context, idx) {
+                  final cat = categoryIcons[idx];
+                  return Column(
+                    children: [
+                      Container(
+                        width: 58,
+                        height: 58,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.orange.shade100, width: 2),
+                          image: DecorationImage(image: NetworkImage(cat["img"]!), fit: BoxFit.cover),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(cat["name"]!, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
+                    ],
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 14),
+
+            // Shopping for others banners
+            const Text("Shopping for others?", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                _buildBannerCard("Women", Colors.purple.shade50),
+                const SizedBox(width: 10),
+                _buildBannerCard("Gen Z", Colors.indigo.shade50),
+                const SizedBox(width: 10),
+                _buildBannerCard("Kids", Colors.amber.shade50),
+              ],
+            ),
+            const SizedBox(height: 20),
+
+            // Category Chips
+            SizedBox(
+              height: 36,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: categories.length,
@@ -472,74 +486,23 @@ class _HomeScreenState extends State<HomeScreen> {
                   return GestureDetector(
                     onTap: () => setState(() => selectedCategoryIndex = index),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
                       decoration: BoxDecoration(
                         color: isSelected ? const Color(0xFFE86B35) : Colors.white,
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(18),
                       ),
                       child: Center(
-                        child: Text(categories[index], style: TextStyle(color: isSelected ? Colors.white : Colors.black87, fontWeight: FontWeight.w600, fontSize: 13)),
+                        child: Text(categories[index], style: TextStyle(color: isSelected ? Colors.white : Colors.black87, fontWeight: FontWeight.w600, fontSize: 12)),
                       ),
                     ),
                   );
                 },
               ),
             ),
-            const SizedBox(height: 22),
+            const SizedBox(height: 20),
 
-            if (filtered.isNotEmpty)
-              GestureDetector(
-                onTap: () async {
-                  await Navigator.push(context, MaterialPageRoute(builder: (context) => ProductDetailScreen(product: filtered[0])));
-                  setState(() {});
-                },
-                child: Container(
-                  decoration: BoxDecoration(color: const Color(0xFF9E8B76), borderRadius: BorderRadius.circular(24)),
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    children: [
-                      Stack(
-                        children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(18),
-                            child: Image.network(filtered[0].image, height: 220, width: double.infinity, fit: BoxFit.cover),
-                          ),
-                          Positioned(
-                            top: 10,
-                            right: 10,
-                            child: CircleAvatar(
-                              radius: 16,
-                              backgroundColor: Colors.white.withOpacity(0.85),
-                              child: Icon(
-                                globalFavorites.contains(filtered[0]) ? Icons.favorite : Icons.favorite_border,
-                                size: 18,
-                                color: const Color(0xFFE86B35),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 14),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(filtered[0].name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
-                              Text(filtered[0].category, style: const TextStyle(color: Colors.white70, fontSize: 12)),
-                            ],
-                          ),
-                          Text("\$${filtered[0].price.toStringAsFixed(2)}", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            const SizedBox(height: 22),
-
-            const Text("New arrivals", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            // Products Grid
+            const Text("Popular Clothes & Shoes", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
             GridView.builder(
               shrinkWrap: true,
@@ -577,6 +540,16 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildBannerCard(String label, Color bg) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(14)),
+        child: Center(child: Text(label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13))),
       ),
     );
   }
@@ -620,7 +593,7 @@ class _SavedScreenState extends State<SavedScreen> {
   }
 }
 
-// ================= DETAILS & BUY =================
+// ================= DETAILS SCREEN =================
 class ProductDetailScreen extends StatefulWidget {
   final Product product;
   const ProductDetailScreen({super.key, required this.product});
@@ -633,39 +606,20 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   String selectedSize = "M";
   final List<String> sizes = ["S", "M", "L", "XL", "2XL"];
 
-  void _showOrderSuccess() {
-    globalOrders.insert(
-      0,
-      OrderItem(
-        orderId: "ORD#${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}",
-        title: "${widget.product.name} (Size $selectedSize)",
-        price: widget.product.price,
-        date: "Today",
-        status: "Processing",
-      ),
+  void _buyNow() {
+    final newOrder = OrderItem(
+      orderId: "ORD#${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}",
+      title: "${widget.product.name} (Size $selectedSize)",
+      price: widget.product.price,
+      date: "Today",
+      status: "Order Placed",
+      currentStep: 1,
     );
+    globalOrders.insert(0, newOrder);
 
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Icon(Icons.check_circle, color: Color(0xFFE86B35), size: 54),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text("Order Placed Successfully!", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-            const SizedBox(height: 8),
-            Text("Order created for ${widget.product.name} for \$${widget.product.price.toStringAsFixed(2)}.", textAlign: TextAlign.center, style: const TextStyle(color: Colors.grey, fontSize: 13)),
-          ],
-        ),
-        actions: [
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context),
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE86B35)),
-            child: const Text("Continue Shopping", style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => OrderTrackingScreen(order: newOrder)),
     );
   }
 
@@ -678,20 +632,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new, size: 18), onPressed: () => Navigator.pop(context)),
         centerTitle: true,
         title: const Text("Details", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-        actions: [
-          IconButton(
-            icon: Icon(globalFavorites.contains(widget.product) ? Icons.favorite : Icons.favorite_border, color: const Color(0xFFE86B35)),
-            onPressed: () {
-              setState(() {
-                if (globalFavorites.contains(widget.product)) {
-                  globalFavorites.remove(widget.product);
-                } else {
-                  globalFavorites.add(widget.product);
-                }
-              });
-            },
-          ),
-        ],
       ),
       body: Column(
         children: [
@@ -701,12 +641,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    height: 280,
-                    width: double.infinity,
-                    decoration: BoxDecoration(color: const Color(0xFF9E8B76), borderRadius: BorderRadius.circular(24)),
-                    child: ClipRRect(borderRadius: BorderRadius.circular(24), child: Image.network(widget.product.image, fit: BoxFit.cover)),
-                  ),
+                  ClipRRect(borderRadius: BorderRadius.circular(24), child: Image.network(widget.product.image, height: 280, width: double.infinity, fit: BoxFit.cover)),
                   const SizedBox(height: 20),
                   Text(widget.product.name, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 4),
@@ -737,7 +672,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   const Text("Description", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                   const SizedBox(height: 6),
                   Text(widget.product.description, style: TextStyle(color: Colors.grey.shade700, height: 1.5, fontSize: 13)),
-                  const SizedBox(height: 20),
                 ],
               ),
             ),
@@ -750,7 +684,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 Expanded(
                   child: OutlinedButton(
                     onPressed: () {
-                      setState(() => globalCart.add(CartItem(product: widget.product, size: selectedSize)));
+                      globalCart.add(CartItem(product: widget.product, size: selectedSize));
                       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Added to cart!")));
                     },
                     style: OutlinedButton.styleFrom(
@@ -764,7 +698,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 const SizedBox(width: 14),
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: _showOrderSuccess,
+                    onPressed: _buyNow,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFE86B35),
                       padding: const EdgeInsets.symmetric(vertical: 14),
@@ -778,6 +712,132 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           ),
         ],
       ),
+    );
+  }
+}
+
+// ================= LIVE ORDER TRACKING SCREEN =================
+class OrderTrackingScreen extends StatelessWidget {
+  final OrderItem order;
+  const OrderTrackingScreen({super.key, required this.order});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Track ${order.orderId}"),
+        centerTitle: true,
+        leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Navigator.pop(context)),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Status Card
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+              child: Row(
+                children: [
+                  const CircleAvatar(
+                    backgroundColor: Color(0xFFFFF3ED),
+                    radius: 28,
+                    child: Icon(Icons.local_shipping_outlined, color: Color(0xFFE86B35), size: 30),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(order.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                        const SizedBox(height: 4),
+                        Text("Status: ${order.status}", style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 13)),
+                        Text("Arriving by tomorrow evening", style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            const Text("Delivery Steps", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 16),
+
+            // Tracking Stepper
+            _buildTrackingStep("Order Confirmed", "Item received by store", true),
+            _buildTrackingStep("Shipped from Warehouse", "Courier picked up your package", order.currentStep >= 2),
+            _buildTrackingStep("Out for Delivery", "Delivery executive is arriving near your address", order.currentStep >= 3),
+            _buildTrackingStep("Delivered", "Delivered at your doorstep", order.currentStep >= 4, isLast: true),
+
+            const SizedBox(height: 24),
+            // Delivery boy call card
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Row(
+                    children: [
+                      CircleAvatar(radius: 20, child: Icon(Icons.delivery_dining)),
+                      SizedBox(width: 12),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text("Delivery Agent: Rajesh Kumar", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                          Text("Verified Delivery Partner", style: TextStyle(color: Colors.grey, fontSize: 11)),
+                        ],
+                      ),
+                    ],
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.phone, color: Colors.green),
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Calling Rajesh Kumar (+91 9876543210)...")));
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTrackingStep(String title, String desc, bool isCompleted, {bool isLast = false}) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Column(
+          children: [
+            CircleAvatar(
+              radius: 12,
+              backgroundColor: isCompleted ? const Color(0xFFE86B35) : Colors.grey.shade300,
+              child: Icon(Icons.check, size: 14, color: isCompleted ? Colors.white : Colors.grey),
+            ),
+            if (!isLast)
+              Container(
+                width: 2,
+                height: 44,
+                color: isCompleted ? const Color(0xFFE86B35) : Colors.grey.shade300,
+              ),
+          ],
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: TextStyle(fontWeight: FontWeight.bold, color: isCompleted ? Colors.black87 : Colors.grey)),
+              Text(desc, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+              const SizedBox(height: 14),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
@@ -821,9 +881,8 @@ class _CartScreenState extends State<CartScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(item.product.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                                  const SizedBox(height: 4),
-                                  Text("Size: ${item.size}", style: TextStyle(color: Colors.grey.shade600, fontSize: 11)),
-                                  const SizedBox(height: 8),
+                                  Text("Size: ${item.size}", style: const TextStyle(color: Colors.grey, fontSize: 11)),
+                                  const SizedBox(height: 6),
                                   Text("\$${item.product.price.toStringAsFixed(2)}", style: const TextStyle(color: Color(0xFFE86B35), fontWeight: FontWeight.bold)),
                                 ],
                               ),
@@ -865,25 +924,22 @@ class _CartScreenState extends State<CartScreen> {
                         height: 48,
                         child: ElevatedButton(
                           onPressed: () {
-                            for (var c in globalCart) {
-                              globalOrders.insert(
-                                0,
-                                OrderItem(orderId: "ORD#${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}", title: "${c.product.name} (x${c.quantity})", price: c.product.price * c.quantity, date: "Today", status: "Processing"),
-                              );
-                            }
+                            final newOrder = OrderItem(
+                              orderId: "ORD#${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}",
+                              title: "${globalCart.length} Fashion Items",
+                              price: subtotal,
+                              date: "Today",
+                              status: "Processing",
+                              currentStep: 2,
+                            );
+                            globalOrders.insert(0, newOrder);
                             setState(() => globalCart.clear());
                             widget.onRefresh();
-                            showDialog(
-                              context: context,
-                              builder: (context) => AlertDialog(
-                                title: const Text("Order Placed!"),
-                                content: const Text("Your order has been recorded in My Orders."),
-                                actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text("OK"))],
-                              ),
-                            );
+
+                            Navigator.push(context, MaterialPageRoute(builder: (c) => OrderTrackingScreen(order: newOrder)));
                           },
                           style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE86B35), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-                          child: const Text("Checkout", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                          child: const Text("Checkout & Place Order", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
                         ),
                       ),
                     ],
@@ -905,10 +961,11 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  // Avatar selection modal
-  void _editProfilePhoto() {
+  void _editProfileSheet() {
     final nameCtrl = TextEditingController(text: userProfileName);
     final phoneCtrl = TextEditingController(text: userProfilePhone);
+    final emailCtrl = TextEditingController(text: userProfileEmail);
+    final urlCtrl = TextEditingController(text: userProfilePic);
 
     showModalBottomSheet(
       context: context,
@@ -917,25 +974,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (context) => StatefulBuilder(
         builder: (context, setSheetState) => Padding(
-          padding: EdgeInsets.only(
-            left: 20,
-            right: 20,
-            top: 20,
-            bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-          ),
+          padding: EdgeInsets.only(left: 20, right: 20, top: 20, bottom: MediaQuery.of(context).viewInsets.bottom + 20),
           child: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text("Choose Profile Photo", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                const Text("Edit Profile & ID Details", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 12),
+                const Text("Choose Avatar Photo:", style: TextStyle(fontSize: 12, color: Colors.grey)),
+                const SizedBox(height: 8),
                 SizedBox(
-                  height: 80,
+                  height: 70,
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
                     itemCount: availableAvatars.length,
-                    separatorBuilder: (_, __) => const SizedBox(width: 12),
+                    separatorBuilder: (_, __) => const SizedBox(width: 10),
                     itemBuilder: (context, idx) {
                       final pic = availableAvatars[idx];
                       final isSelected = userProfilePic == pic;
@@ -945,39 +999,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           setState(() {});
                         },
                         child: Container(
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(color: isSelected ? const Color(0xFFE86B35) : Colors.transparent, width: 3),
-                          ),
-                          child: CircleAvatar(
-                            radius: 34,
-                            backgroundImage: NetworkImage(pic),
-                          ),
+                          decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: isSelected ? const Color(0xFFE86B35) : Colors.transparent, width: 3)),
+                          child: CircleAvatar(radius: 30, backgroundImage: NetworkImage(pic)),
                         ),
                       );
                     },
                   ),
                 ),
-                const SizedBox(height: 18),
-                TextField(
-                  controller: nameCtrl,
-                  decoration: const InputDecoration(labelText: "Full Name", border: OutlineInputBorder()),
-                ),
+                const SizedBox(height: 14),
+                TextField(controller: nameCtrl, decoration: const InputDecoration(labelText: "Full Name", border: OutlineInputBorder())),
                 const SizedBox(height: 12),
-                TextField(
-                  controller: phoneCtrl,
-                  keyboardType: TextInputType.phone,
-                  decoration: const InputDecoration(labelText: "Phone Number", border: OutlineInputBorder()),
-                ),
-                const SizedBox(height: 20),
+                TextField(controller: phoneCtrl, keyboardType: TextInputType.phone, decoration: const InputDecoration(labelText: "Phone Number", border: OutlineInputBorder())),
+                const SizedBox(height: 12),
+                TextField(controller: emailCtrl, keyboardType: TextInputType.emailAddress, decoration: const InputDecoration(labelText: "Email ID", border: OutlineInputBorder())),
+                const SizedBox(height: 12),
+                TextField(controller: urlCtrl, decoration: const InputDecoration(labelText: "Custom Photo URL (Optional)", border: OutlineInputBorder())),
+                const SizedBox(height: 18),
                 SizedBox(
                   width: double.infinity,
                   height: 48,
                   child: ElevatedButton(
                     onPressed: () {
                       setState(() {
-                        userProfileName = nameCtrl.text.isNotEmpty ? nameCtrl.text : userProfileName;
-                        userProfilePhone = phoneCtrl.text.isNotEmpty ? phoneCtrl.text : userProfilePhone;
+                        userProfileName = nameCtrl.text;
+                        userProfilePhone = phoneCtrl.text;
+                        userProfileEmail = emailCtrl.text;
+                        if (urlCtrl.text.isNotEmpty) userProfilePic = urlCtrl.text;
                       });
                       widget.onRefresh();
                       Navigator.pop(context);
@@ -995,73 +1042,149 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  void _showSellDialog() {
+  // FLIPKART STYLE DELIVERY ADDRESS SELECTOR
+  void _openAddresses() {
     final nameCtrl = TextEditingController();
-    final priceCtrl = TextEditingController();
-    final descCtrl = TextEditingController();
-    String category = "Tops";
+    final addrCtrl = TextEditingController();
+    final phCtrl = TextEditingController();
 
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
-      builder: (context) => StatefulBuilder(
-        builder: (context, setModalState) => Padding(
-          padding: EdgeInsets.only(left: 20, right: 20, top: 20, bottom: MediaQuery.of(context).viewInsets.bottom + 20),
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Row(
-                  children: [
-                    Icon(Icons.sell_outlined, color: Color(0xFFE86B35)),
-                    SizedBox(width: 8),
-                    Text("Sell Your Fashion Item", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                TextField(controller: nameCtrl, decoration: const InputDecoration(labelText: "Product Title", border: OutlineInputBorder())),
-                const SizedBox(height: 12),
-                TextField(controller: priceCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: "Price (\$)", border: OutlineInputBorder())),
-                const SizedBox(height: 12),
-                DropdownButtonFormField<String>(
-                  value: category,
-                  decoration: const InputDecoration(labelText: "Category", border: OutlineInputBorder()),
-                  items: ["Tops", "Footwear", "Bottoms"].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
-                  onChanged: (v) => setModalState(() => category = v!),
-                ),
-                const SizedBox(height: 12),
-                TextField(controller: descCtrl, maxLines: 2, decoration: const InputDecoration(labelText: "Description", border: OutlineInputBorder())),
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  height: 48,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      if (nameCtrl.text.isNotEmpty && priceCtrl.text.isNotEmpty) {
-                        globalProducts.insert(
-                          0,
-                          Product(
-                            id: DateTime.now().millisecondsSinceEpoch.toString(),
-                            name: nameCtrl.text,
-                            category: category,
-                            price: double.tryParse(priceCtrl.text) ?? 50.0,
-                            image: "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=500&q=80",
-                            description: descCtrl.text.isNotEmpty ? descCtrl.text : "Trendy fashion item.",
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => StatefulBuilder(
+          builder: (context, setAddrState) => Scaffold(
+            appBar: AppBar(title: const Text("Select delivery address"), centerTitle: true),
+            body: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  // Use Current Location Button (Flipkart Style)
+                  Container(
+                    decoration: BoxDecoration(color: const Color(0xFFEDF4FE), borderRadius: BorderRadius.circular(12)),
+                    child: ListTile(
+                      leading: const Icon(Icons.my_location, color: Colors.blueAccent),
+                      title: const Text("Use my current location", style: TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.bold, fontSize: 14)),
+                      subtitle: const Text("Allow access to auto-fill address", style: TextStyle(fontSize: 11)),
+                      trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.blueAccent),
+                      onTap: () {
+                        setAddrState(() {
+                          globalAddresses.insert(
+                            0,
+                            AddressItem(
+                              name: userProfileName,
+                              address: "Current GPS Location: Attakulangara / Pihra Junction",
+                              phone: userProfilePhone,
+                              isSelected: true,
+                            ),
+                          );
+                          for (int i = 1; i < globalAddresses.length; i++) {
+                            globalAddresses[i].isSelected = false;
+                          }
+                        });
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Location detected & set as primary!")));
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // + Add New Address
+                  Container(
+                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
+                    child: ListTile(
+                      leading: const Icon(Icons.add, color: Colors.blueAccent),
+                      title: const Text("+ Add New Address", style: TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.bold, fontSize: 14)),
+                      trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
+                      onTap: () {
+                        showDialog(
+                          context: context,
+                          builder: (c) => AlertDialog(
+                            title: const Text("Add New Address"),
+                            content: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                TextField(controller: nameCtrl, decoration: const InputDecoration(labelText: "Receiver Name")),
+                                TextField(controller: phCtrl, keyboardType: TextInputType.phone, decoration: const InputDecoration(labelText: "Phone Number")),
+                                TextField(controller: addrCtrl, maxLines: 2, decoration: const InputDecoration(labelText: "Full Address with Pincode")),
+                              ],
+                            ),
+                            actions: [
+                              TextButton(onPressed: () => Navigator.pop(c), child: const Text("Cancel")),
+                              ElevatedButton(
+                                onPressed: () {
+                                  if (nameCtrl.text.isNotEmpty && addrCtrl.text.isNotEmpty) {
+                                    setAddrState(() {
+                                      globalAddresses.add(
+                                        AddressItem(name: nameCtrl.text, address: addrCtrl.text, phone: phCtrl.text.isNotEmpty ? phCtrl.text : userProfilePhone),
+                                      );
+                                    });
+                                    Navigator.pop(c);
+                                  }
+                                },
+                                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE86B35)),
+                                child: const Text("Save", style: TextStyle(color: Colors.white)),
+                              )
+                            ],
                           ),
                         );
-                        Navigator.pop(context);
-                        widget.onRefresh();
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Item listed for sale!")));
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE86B35)),
-                    child: const Text("List Product", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      },
+                    ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 16),
+
+                  const Align(alignment: Alignment.centerLeft, child: Text("Saved addresses", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))),
+                  const SizedBox(height: 10),
+
+                  // List of Addresses
+                  Expanded(
+                    child: ListView.separated(
+                      itemCount: globalAddresses.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 10),
+                      itemBuilder: (context, idx) {
+                        final addr = globalAddresses[idx];
+                        return Container(
+                          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14), border: Border.all(color: addr.isSelected ? const Color(0xFFE86B35) : Colors.transparent, width: 1.5)),
+                          child: ListTile(
+                            leading: Icon(Icons.home_work_outlined, color: addr.isSelected ? const Color(0xFFE86B35) : Colors.grey),
+                            title: Row(
+                              children: [
+                                Text(addr.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                                const SizedBox(width: 8),
+                                if (addr.isSelected)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                    decoration: BoxDecoration(color: Colors.blue.shade50, borderRadius: BorderRadius.circular(4)),
+                                    child: const Text("Selected", style: TextStyle(color: Colors.blueAccent, fontSize: 10, fontWeight: FontWeight.bold)),
+                                  ),
+                              ],
+                            ),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const SizedBox(height: 4),
+                                Text(addr.address, style: const TextStyle(fontSize: 12, color: Colors.black87)),
+                                const SizedBox(height: 4),
+                                Text("📞 ${addr.phone}", style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                              ],
+                            ),
+                            trailing: IconButton(
+                              icon: const Icon(Icons.check_circle_outline),
+                              color: addr.isSelected ? const Color(0xFFE86B35) : Colors.grey,
+                              onPressed: () {
+                                setAddrState(() {
+                                  for (var a in globalAddresses) {
+                                    a.isSelected = false;
+                                  }
+                                  addr.isSelected = true;
+                                });
+                              },
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -1069,6 +1192,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  // MY ORDERS WITH LIVE TRACKING CLICK
   void _openMyOrders() {
     Navigator.push(
       context,
@@ -1083,33 +1207,43 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   separatorBuilder: (_, __) => const SizedBox(height: 12),
                   itemBuilder: (context, i) {
                     final ord = globalOrders[i];
-                    return Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14)),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(ord.orderId, style: const TextStyle(fontWeight: FontWeight.bold)),
-                              Text(ord.title, style: const TextStyle(fontSize: 13, color: Colors.grey)),
-                              Text(ord.date, style: const TextStyle(fontSize: 11, color: Colors.black45)),
-                            ],
-                          ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Text("\$${ord.price.toStringAsFixed(2)}", style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFE86B35))),
-                              const SizedBox(height: 4),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                decoration: BoxDecoration(color: Colors.green.shade50, borderRadius: BorderRadius.circular(6)),
-                                child: Text(ord.status, style: const TextStyle(color: Colors.green, fontSize: 11, fontWeight: FontWeight.bold)),
-                              )
-                            ],
-                          ),
-                        ],
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (c) => OrderTrackingScreen(order: ord)));
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14)),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(ord.orderId, style: const TextStyle(fontWeight: FontWeight.bold)),
+                                Text(ord.title, style: const TextStyle(fontSize: 13, color: Colors.grey)),
+                                Text(ord.date, style: const TextStyle(fontSize: 11, color: Colors.black45)),
+                              ],
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text("\$${ord.price.toStringAsFixed(2)}", style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFE86B35))),
+                                const SizedBox(height: 4),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(color: Colors.green.shade50, borderRadius: BorderRadius.circular(6)),
+                                  child: Row(
+                                    children: [
+                                      Text(ord.status, style: const TextStyle(color: Colors.green, fontSize: 11, fontWeight: FontWeight.bold)),
+                                      const Icon(Icons.arrow_forward_ios, size: 10, color: Colors.green),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     );
                   },
@@ -1119,201 +1253,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  void _openAddresses() {
-    final addrCtrl = TextEditingController();
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => StatefulBuilder(
-          builder: (context, setAddrState) => Scaffold(
-            appBar: AppBar(title: const Text("Shipping Addresses"), centerTitle: true),
-            body: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  Expanded(
-                    child: ListView.separated(
-                      itemCount: globalAddresses.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 10),
-                      itemBuilder: (context, idx) => ListTile(
-                        tileColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        leading: const Icon(Icons.location_on, color: Color(0xFFE86B35)),
-                        title: Text(globalAddresses[idx], style: const TextStyle(fontSize: 14)),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
-                          onPressed: () => setAddrState(() => globalAddresses.removeAt(idx)),
-                        ),
-                      ),
-                    ),
-                  ),
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: const Text("Add New Address"),
-                          content: TextField(controller: addrCtrl, maxLines: 3, decoration: const InputDecoration(hintText: "Enter full delivery address")),
-                          actions: [
-                            TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
-                            ElevatedButton(
-                              onPressed: () {
-                                if (addrCtrl.text.isNotEmpty) {
-                                  setAddrState(() => globalAddresses.add(addrCtrl.text));
-                                  Navigator.pop(context);
-                                }
-                              },
-                              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE86B35)),
-                              child: const Text("Save", style: TextStyle(color: Colors.white)),
-                            )
-                          ],
-                        ),
-                      );
-                    },
-                    icon: const Icon(Icons.add, color: Colors.white),
-                    label: const Text("Add New Address", style: TextStyle(color: Colors.white)),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFE86B35),
-                      minimumSize: const Size(double.infinity, 48),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _openPayments() {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (context) => StatefulBuilder(
-        builder: (context, setModalState) => Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text("Payment Methods", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 14),
-              RadioListTile<String>(
-                value: "UPI / Google Pay / PhonePe",
-                groupValue: selectedPaymentMethod,
-                title: const Text("UPI / Google Pay / PhonePe"),
-                subtitle: const Text("Instant UPI Transfer"),
-                secondary: const Icon(Icons.account_balance_wallet, color: Colors.blue),
-                onChanged: (val) {
-                  setModalState(() => selectedPaymentMethod = val!);
-                  setState(() {});
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Selected: $val")));
-                },
-              ),
-              RadioListTile<String>(
-                value: "Debit / Credit Card",
-                groupValue: selectedPaymentMethod,
-                title: const Text("Debit / Credit Card"),
-                subtitle: const Text("Visa, MasterCard, RuPay"),
-                secondary: const Icon(Icons.credit_card, color: Colors.purple),
-                onChanged: (val) {
-                  setModalState(() => selectedPaymentMethod = val!);
-                  setState(() {});
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Selected: $val")));
-                },
-              ),
-              RadioListTile<String>(
-                value: "Cash on Delivery (COD)",
-                groupValue: selectedPaymentMethod,
-                title: const Text("Cash on Delivery (COD)"),
-                subtitle: const Text("Pay when item arrives"),
-                secondary: const Icon(Icons.money, color: Colors.green),
-                onChanged: (val) {
-                  setModalState(() => selectedPaymentMethod = val!);
-                  setState(() {});
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Selected: $val")));
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _openSettings() {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (context) => StatefulBuilder(
-        builder: (context, setSheetState) => Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text("Settings", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 12),
-              ListTile(
-                leading: const Icon(Icons.notifications_active_outlined),
-                title: const Text("App Notifications"),
-                trailing: Switch(
-                  value: notificationEnabled,
-                  activeColor: const Color(0xFFE86B35),
-                  onChanged: (v) {
-                    setSheetState(() => notificationEnabled = v);
-                    setState(() {});
-                  },
-                ),
-              ),
-              ListTile(
-                leading: const Icon(Icons.language_outlined),
-                title: const Text("Language"),
-                trailing: Text(selectedLanguage, style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFE86B35))),
-                onTap: () {
-                  setSheetState(() {
-                    selectedLanguage = selectedLanguage == "Hindi" ? "English" : "Hindi";
-                  });
-                  setState(() {});
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.help_outline),
-                title: const Text("Customer Support"),
-                onTap: () {
-                  Navigator.pop(context);
-                  showDialog(
-                    context: context,
-                    builder: (c) => AlertDialog(
-                      title: const Text("Customer Support"),
-                      content: const Text("Need help? Contact us anytime:\n\nEmail: support@fashionapp.com\nHelpline: +91 98765 43210"),
-                      actions: [TextButton(onPressed: () => Navigator.pop(c), child: const Text("OK"))],
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Profile", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)), backgroundColor: Colors.transparent, elevation: 0, centerTitle: true),
+      appBar: AppBar(title: const Text("Profile"), centerTitle: true, backgroundColor: Colors.transparent, elevation: 0),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            // Profile Pic with Instant Avatar Chooser
+            // Profile Pic with Avatar Picker
             GestureDetector(
-              onTap: _editProfilePhoto,
+              onTap: _editProfileSheet,
               child: Stack(
                 children: [
                   CircleAvatar(
@@ -1335,10 +1285,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             const SizedBox(height: 12),
             Text(userProfileName, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text(userProfileEmail, style: const TextStyle(color: Colors.grey, fontSize: 12)),
             Text("+91 $userProfilePhone • Verified Account", style: const TextStyle(color: Colors.grey, fontSize: 12)),
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
 
-            // Sell Button
+            // Sell Your Items
             Container(
               decoration: BoxDecoration(
                 gradient: const LinearGradient(colors: [Color(0xFFE86B35), Color(0xFFFF8A50)]),
@@ -1349,16 +1300,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 title: const Text("Sell Your Items", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                 subtitle: const Text("Upload clothes to sell & earn", style: TextStyle(color: Colors.white70, fontSize: 12)),
                 trailing: const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 16),
-                onTap: _showSellDialog,
+                onTap: () {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Sell item module opened!")));
+                },
               ),
             ),
             const SizedBox(height: 16),
 
-            // Clickable Profile Tiles
-            _buildProfileTile(Icons.shopping_bag_outlined, "My Orders", _openMyOrders),
-            _buildProfileTile(Icons.location_on_outlined, "Shipping Addresses", _openAddresses),
-            _buildProfileTile(Icons.payment_outlined, "Payment Methods", _openPayments),
-            _buildProfileTile(Icons.settings_outlined, "Settings", _openSettings),
+            // Profile Options
+            _buildProfileTile(Icons.shopping_bag_outlined, "My Orders (Live Tracking)", _openMyOrders),
+            _buildProfileTile(Icons.location_on_outlined, "Shipping Addresses & GPS", _openAddresses),
+            _buildProfileTile(Icons.badge_outlined, "Edit Profile ID & Details", _editProfileSheet),
+            _buildProfileTile(Icons.payment_outlined, "Payment Methods", () {
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("UPI & COD active!")));
+            }),
             const SizedBox(height: 12),
 
             // Logout
