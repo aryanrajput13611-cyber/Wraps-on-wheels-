@@ -125,6 +125,12 @@ address: "Wraps on wheels, Attakulangara, Main Road, FPSRA87, Thiruvananthapuram
 phone: "9310758470",
 isSelected: true,
 ),
+AddressItem(
+name: "Sunny",
+address: "Wraps on wheels, Attakulangara, Near Hotel Indraprastha",
+phone: "9310758470",
+isSelected: false,
+),
 ];
 ​// Profile State
 String userProfileName = "Sunan Kumar";
@@ -142,7 +148,7 @@ String currentLanguage = "English";
 "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&q=80",
 "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=300&q=80",
 ];
-​// ================= AUTH SCREEN (LOGIN, SIGNUP, PHONE/EMAIL, FORGOT) =================
+​// ================= AUTH SCREEN =================
 class AuthScreen extends StatefulWidget {
 const AuthScreen({super.key});
 ​@override
@@ -197,7 +203,7 @@ crossAxisAlignment: CrossAxisAlignment.start,
 children: [
 const Row(
 children: [
-Icon(Icons.lock_reset, color: Color(0xFFE86B35)),
+Icon(Icons.lock_outline, color: Color(0xFFE86B35)),
 SizedBox(width: 8),
 Text("Forgot Password", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
 ],
@@ -249,7 +255,7 @@ title: const Text("Enter 6-Digit OTP"),
 content: Column(
 mainAxisSize: MainAxisSize.min,
 children: [
-Text("OTP code has been sent to $target. Enter code (e.g. 123456):", style: const TextStyle(fontSize: 13, color: Colors.grey)),
+Text("OTP code sent to $target. Enter code (e.g. 123456):", style: const TextStyle(fontSize: 13, color: Colors.grey)),
 const SizedBox(height: 14),
 TextField(
 controller: otpCtrl,
@@ -267,7 +273,7 @@ ElevatedButton(
 onPressed: () {
 Navigator.pop(c);
 ScaffoldMessenger.of(context).showSnackBar(
-const SnackBar(content: Text("OTP Verified! You can now login with your new password.")),
+const SnackBar(content: Text("OTP Verified! You can now login.")),
 );
 },
 style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE86B35)),
@@ -287,7 +293,6 @@ child: SingleChildScrollView(
 padding: const EdgeInsets.symmetric(horizontal: 26.0),
 child: Column(
 children: [
-// App Logo
 Container(
 width: 65,
 height: 65,
@@ -307,8 +312,7 @@ isLogin ? "Welcome back! Login to explore trends" : "Create account to buy & tra
 style: const TextStyle(color: Colors.grey, fontSize: 13),
 ),
 const SizedBox(height: 24),
-​// Toggle Login / Sign Up
-Container(
+​Container(
 padding: const EdgeInsets.all(4),
 decoration: BoxDecoration(color: Colors.grey.shade200, borderRadius: BorderRadius.circular(14)),
 child: Row(
@@ -321,7 +325,6 @@ padding: const EdgeInsets.symmetric(vertical: 10),
 decoration: BoxDecoration(
 color: isLogin ? Colors.white : Colors.transparent,
 borderRadius: BorderRadius.circular(10),
-boxShadow: isLogin ? [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4)] : [],
 ),
 child: Center(
 child: Text(
@@ -340,7 +343,6 @@ padding: const EdgeInsets.symmetric(vertical: 10),
 decoration: BoxDecoration(
 color: !isLogin ? Colors.white : Colors.transparent,
 borderRadius: BorderRadius.circular(10),
-boxShadow: !isLogin ? [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4)] : [],
 ),
 child: Center(
 child: Text(
@@ -355,8 +357,7 @@ style: TextStyle(fontWeight: FontWeight.bold, color: !isLogin ? const Color(0xFF
 ),
 ),
 const SizedBox(height: 14),
-​// Toggle Email vs Phone Login
-Row(
+​Row(
 mainAxisAlignment: MainAxisAlignment.end,
 children: [
 TextButton.icon(
@@ -374,8 +375,7 @@ style: const TextStyle(color: Color(0xFFE86B35), fontSize: 12, fontWeight: FontW
 ),
 ],
 ),
-​// Sign Up Full Name Field
-if (!isLogin) ...[
+​if (!isLogin) ...[
 TextField(
 controller: nameController,
 decoration: InputDecoration(
@@ -388,21 +388,19 @@ border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: 
 ),
 const SizedBox(height: 14),
 ],
-​// Email or Phone input
-TextField(
+​TextField(
 controller: inputController,
 keyboardType: usePhoneAuth ? TextInputType.phone : TextInputType.emailAddress,
 decoration: InputDecoration(
 hintText: usePhoneAuth ? "Phone Number (e.g. 9310758470)" : "Email ID",
-prefixIcon: Icon(usePhoneAuth ? Icons.phone_outlined : Icons.alternate_email),
+prefixIcon: Icon(usePhoneAuth ? Icons.phone_android : Icons.alternate_email),
 filled: true,
 fillColor: Colors.white,
 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
 ),
 ),
 const SizedBox(height: 14),
-​// Password input with visibility toggle
-TextField(
+​TextField(
 controller: passwordController,
 obscureText: !isPasswordVisible,
 decoration: InputDecoration(
@@ -417,8 +415,7 @@ fillColor: Colors.white,
 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
 ),
 ),
-​// Forgot Password link
-if (isLogin) ...[
+​if (isLogin) ...[
 Align(
 alignment: Alignment.centerRight,
 child: TextButton(
@@ -429,8 +426,7 @@ child: const Text("Forgot Password?", style: TextStyle(color: Colors.grey, fontS
 ] else ...[
 const SizedBox(height: 18),
 ],
-​// Submit Button
-SizedBox(
+​SizedBox(
 width: double.infinity,
 height: 50,
 child: ElevatedButton(
@@ -486,7 +482,7 @@ selectedItemColor: const Color(0xFFE86B35),
 unselectedItemColor: Colors.grey.shade400,
 type: BottomNavigationBarType.fixed,
 items: const [
-BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: 'Home'),
+BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
 BottomNavigationBarItem(icon: Icon(Icons.favorite_border), label: 'Saved'),
 BottomNavigationBarItem(icon: Icon(Icons.shopping_bag_outlined), label: 'Cart'),
 BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Account'),
@@ -583,7 +579,6 @@ padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
 child: Column(
 crossAxisAlignment: CrossAxisAlignment.start,
 children: [
-// Top Bar
 Row(
 mainAxisAlignment: MainAxisAlignment.spaceBetween,
 children: [
@@ -609,7 +604,7 @@ IconButton(onPressed: () {}, icon: const Icon(Icons.notifications_none_outlined)
 ],
 ),
 const SizedBox(height: 16),
-​// Search Bar with Visual Search Lens
+​// Search Bar with Lens
 Container(
 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
 decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 8)]),
@@ -952,7 +947,14 @@ const CartScreen({super.key, required this.onRefresh});
 State<CartScreen> createState() => _CartScreenState();
 }
 ​class _CartScreenState extends State<CartScreen> {
-double get subtotal => globalCart.fold(0, (sum, item) => sum + (item.product.price * item.quantity));
+// Safe calculation to prevent compiler type mismatch
+double get subtotal {
+double total = 0.0;
+for (var item in globalCart) {
+total += (item.product.price * item.quantity);
+}
+return total;
+}
 ​@override
 Widget build(BuildContext context) {
 return Scaffold(
@@ -1064,7 +1066,6 @@ const ProfileSettingsScreen({super.key, required this.onRefresh});
 State<ProfileSettingsScreen> createState() => _ProfileSettingsScreenState();
 }
 ​class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
-// USER CUSTOM PHOTO / AVATAR PICKER
 void _editProfileSheet() {
 final nameCtrl = TextEditingController(text: userProfileName);
 final phoneCtrl = TextEditingController(text: userProfilePhone);
@@ -1085,14 +1086,13 @@ crossAxisAlignment: CrossAxisAlignment.start,
 children: [
 const Row(
 children: [
-Icon(Icons.edit_note, color: Color(0xFFE86B35)),
+Icon(Icons.edit, color: Color(0xFFE86B35)),
 SizedBox(width: 8),
 Text("Edit Profile & Photo", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
 ],
 ),
 const SizedBox(height: 14),
-​// Choose Avatar
-const Text("Pick Avatar or Enter Custom Photo Link:", style: TextStyle(fontSize: 12, color: Colors.grey)),
+​const Text("Pick Avatar or Enter Custom Photo Link:", style: TextStyle(fontSize: 12, color: Colors.grey)),
 const SizedBox(height: 8),
 SizedBox(
 height: 65,
@@ -1120,8 +1120,7 @@ child: CircleAvatar(radius: 28, backgroundImage: NetworkImage(pic)),
 ),
 ),
 const SizedBox(height: 12),
-​// Custom Photo Link
-TextField(
+​TextField(
 controller: photoUrlCtrl,
 decoration: const InputDecoration(
 labelText: "Custom Photo URL (Google / Cloud Link)",
@@ -1167,8 +1166,7 @@ child: const Text("Save Changes", style: TextStyle(color: Colors.white, fontWeig
 ),
 );
 }
-​// PAYMENT METHODS: CASH, UPI, CARD
-void _openPaymentMethods() {
+​void _openPaymentMethods() {
 showModalBottomSheet(
 context: context,
 shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
@@ -1181,8 +1179,7 @@ crossAxisAlignment: CrossAxisAlignment.start,
 children: [
 const Text("Select Payment Method", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
 const SizedBox(height: 14),
-​// 1. CASH / COD
-RadioListTile<String>(
+​RadioListTile<String>(
 value: "CASH (Cash on Delivery)",
 groupValue: selectedPaymentMethod,
 title: const Text("CASH (Cash on Delivery)", style: TextStyle(fontWeight: FontWeight.bold)),
@@ -1196,8 +1193,7 @@ Navigator.pop(context);
 ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Payment set to: $val")));
 },
 ),
-​// 2. UPI
-RadioListTile<String>(
+​RadioListTile<String>(
 value: "UPI (Google Pay / PhonePe / Paytm)",
 groupValue: selectedPaymentMethod,
 title: const Text("UPI (Google Pay / PhonePe / Paytm)", style: TextStyle(fontWeight: FontWeight.bold)),
@@ -1211,8 +1207,7 @@ Navigator.pop(context);
 ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Payment set to: $val")));
 },
 ),
-​// 3. CARD
-RadioListTile<String>(
+​RadioListTile<String>(
 value: "CARD (Debit / Credit / RuPay / Visa)",
 groupValue: selectedPaymentMethod,
 title: const Text("CARD (Credit / Debit Card)", style: TextStyle(fontWeight: FontWeight.bold)),
@@ -1232,8 +1227,7 @@ ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Payment set t
 ),
 );
 }
-​// CUSTOMER SUPPORT (EMAIL ✉️, PHONE, CHAT)
-void _openCustomerSupport() {
+​void _openCustomerSupport() {
 showModalBottomSheet(
 context: context,
 shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
@@ -1245,15 +1239,14 @@ crossAxisAlignment: CrossAxisAlignment.start,
 children: [
 const Row(
 children: [
-Icon(Icons.headset_mic_outlined, color: Color(0xFFE86B35)),
+Icon(Icons.headset_mic, color: Color(0xFFE86B35)),
 SizedBox(width: 8),
 Text("Customer Support & Helpdesk", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
 ],
 ),
 const SizedBox(height: 14),
-​// Email Support ✉️
-ListTile(
-leading: const CircleAvatar(backgroundColor: Color(0xFFFFF3ED), child: Icon(Icons.email_outlined, color: Color(0xFFE86B35))),
+​ListTile(
+leading: const CircleAvatar(backgroundColor: Color(0xFFFFF3ED), child: Icon(Icons.email, color: Color(0xFFE86B35))),
 title: const Text("Email Support ✉️", style: TextStyle(fontWeight: FontWeight.bold)),
 subtitle: const Text("support@fashionstore.com"),
 trailing: const Icon(Icons.send, size: 18, color: Color(0xFFE86B35)),
@@ -1269,9 +1262,8 @@ actions: [TextButton(onPressed: () => Navigator.pop(c), child: const Text("OK"))
 );
 },
 ),
-​// Phone Helpline
-ListTile(
-leading: const CircleAvatar(backgroundColor: Color(0xFFEDF4FE), child: Icon(Icons.phone_in_talk, color: Colors.blueAccent)),
+​ListTile(
+leading: const CircleAvatar(backgroundColor: Color(0xFFEDF4FE), child: Icon(Icons.phone, color: Colors.blueAccent)),
 title: const Text("Helpline Calling", style: TextStyle(fontWeight: FontWeight.bold)),
 subtitle: const Text("+91 9310758470 (Mon-Sat 9AM-8PM)"),
 trailing: const Icon(Icons.call, size: 18, color: Colors.blueAccent),
@@ -1282,9 +1274,8 @@ const SnackBar(content: Text("Calling support helpline +91 9310758470...")),
 );
 },
 ),
-​// FAQs
-ListTile(
-leading: const CircleAvatar(backgroundColor: Color(0xFFE8F5E9), child: Icon(Icons.help_center_outlined, color: Colors.green)),
+​ListTile(
+leading: const CircleAvatar(backgroundColor: Color(0xFFE8F5E9), child: Icon(Icons.help_outline, color: Colors.green)),
 title: const Text("Order & Return FAQs", style: TextStyle(fontWeight: FontWeight.bold)),
 subtitle: const Text("7-day return policy and refund guidelines"),
 onTap: () {
@@ -1299,8 +1290,7 @@ const SnackBar(content: Text("Returns: 7 days free replacement on all fashion it
 ),
 );
 }
-​// ADDRESS MANAGEMENT
-void _openAddresses() {
+​void _openAddresses() {
 final nameCtrl = TextEditingController();
 final addrCtrl = TextEditingController();
 final phCtrl = TextEditingController();
@@ -1394,7 +1384,7 @@ final addr = globalAddresses[idx];
 return Container(
 decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14), border: Border.all(color: addr.isSelected ? const Color(0xFFE86B35) : Colors.transparent, width: 1.5)),
 child: ListTile(
-leading: Icon(Icons.home_work_outlined, color: addr.isSelected ? const Color(0xFFE86B35) : Colors.grey),
+leading: Icon(Icons.home, color: addr.isSelected ? const Color(0xFFE86B35) : Colors.grey),
 title: Text(addr.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
 subtitle: Text("${addr.address}\n📞 ${addr.phone}", style: const TextStyle(fontSize: 12)),
 trailing: IconButton(
@@ -1421,8 +1411,7 @@ addr.isSelected = true;
 ),
 );
 }
-​// MY ORDERS
-void openMyOrders() {
+​void openMyOrders() {
 Navigator.push(
 context,
 MaterialPageRoute(
@@ -1490,7 +1479,6 @@ padding: const EdgeInsets.all(18),
 child: Column(
 crossAxisAlignment: CrossAxisAlignment.start,
 children: [
-// User Header Card
 Container(
 padding: const EdgeInsets.all(16),
 decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
@@ -1536,8 +1524,7 @@ onPressed: _editProfileSheet,
 ),
 ),
 const SizedBox(height: 20),
-​// Profile Settings Section
-const Text("Profile Settings", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+​const Text("Profile Settings", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
 const SizedBox(height: 8),
 _buildTile(Icons.person_outline, "Edit profile", _editProfileSheet),
 _buildTile(Icons.location_on_outlined, "Saved addresses", _openAddresses),
@@ -1553,17 +1540,14 @@ setState(() => notificationEnabled = !notificationEnabled);
 ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Notifications ${notificationEnabled ? 'Enabled' : 'Disabled'}")));
 }),
 ​const SizedBox(height: 20),
-// Payments & Wallets Section
 const Text("Payments & Wallets", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
 const SizedBox(height: 8),
 _buildTile(Icons.payment_outlined, "Payment Methods (CASH / UPI / CARD)", _openPaymentMethods, subtitle: selectedPaymentMethod),
 ​const SizedBox(height: 20),
-// Customer Support Section
 const Text("Customer Support & Help", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
 const SizedBox(height: 8),
-_buildTile(Icons.mark_email_read_outlined, "Customer Support (Email ✉️ & Helpline)", _openCustomerSupport),
+_buildTile(Icons.contact_mail_outlined, "Customer Support (Email ✉️ & Helpline)", _openCustomerSupport),
 ​const SizedBox(height: 16),
-// Logout
 ListTile(
 tileColor: Colors.white,
 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
